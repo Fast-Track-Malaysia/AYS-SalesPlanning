@@ -3051,6 +3051,8 @@ namespace FT_ADDON.AYS
                         SAP.SBOApplication.MessageBox("Document is not OPEN, no Delivery generated.", 1, "Ok", "", "");
                         return rtn;
                     }
+
+
                     SAPbobsCOM.Documents oReceipt = (SAPbobsCOM.Documents)SAP.SBOCompany.GetBusinessObject(SAPbobsCOM.BoObjectTypes.oInventoryGenEntry);
                     SAPbobsCOM.Documents oIssue = (SAPbobsCOM.Documents)SAP.SBOCompany.GetBusinessObject(SAPbobsCOM.BoObjectTypes.oInventoryGenExit);
                     SAPbobsCOM.JournalEntries oJE = (SAPbobsCOM.JournalEntries)SAP.SBOCompany.GetBusinessObject(SAPbobsCOM.BoObjectTypes.oJournalEntries);
@@ -3932,7 +3934,6 @@ namespace FT_ADDON.AYS
                             }
                         }
 
-                        if (SAP.SBOCompany.InTransaction) SAP.SBOCompany.EndTransaction(SAPbobsCOM.BoWfTransOpt.wf_Commit);
                         if (oReceiptKey != "")
                         {
                             oReceipt = (SAPbobsCOM.Documents)SAP.SBOCompany.GetBusinessObject(SAPbobsCOM.BoObjectTypes.oInventoryGenEntry);
@@ -3975,6 +3976,7 @@ namespace FT_ADDON.AYS
                     //rs.DoQuery("update [@FT_CHARGE] set Status = 'C' where DocEntry = " + docEntry.ToString());
                     //rs.DoQuery("update [@FT_TPPLAN] set Status = 'C' where DocNum = " + tpdocnum);
                 }
+                if (SAP.SBOCompany.InTransaction) SAP.SBOCompany.EndTransaction(SAPbobsCOM.BoWfTransOpt.wf_Commit);
                 rtn = true;
 
                 return rtn;
