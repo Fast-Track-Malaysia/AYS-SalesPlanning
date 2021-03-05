@@ -222,7 +222,7 @@ namespace FT_ADDON.AYS
 
                                 }
 
-                                if (objecttype == "112")
+                                if (objecttype == "112") // draft sales order
                                 {
                                     //sendMsg(objecttype, "U", docentry, oForm.Title + " " + docnum, status, "Draft Document #" + docnum);
 
@@ -413,6 +413,34 @@ namespace FT_ADDON.AYS
                                 UserForm_SalesPlanning.checkrow(oNewForm);
                                 oNewForm.Mode = SAPbouiCOM.BoFormMode.fm_OK_MODE;
                             }
+                            else if (pVal.ColUID == "DocEntry")
+                            {
+                                oForm.DataSources.UserDataSources.Item("row").Value = pVal.Row.ToString();
+
+                                string docentry = oDataTable.GetValue("DocEntry", pVal.Row).ToString();
+                                string docnum = oDataTable.GetValue("DocNum", pVal.Row).ToString();
+
+                                InitForm.FT_SPLANscreenpainter(sptype, sptype + "1", "");
+
+                                SAPbouiCOM.Form oNewForm = SAP.SBOApplication.Forms.ActiveForm;
+
+                                SAPbouiCOM.Conditions oConditions = new SAPbouiCOM.Conditions();
+                                SAPbouiCOM.Condition oCondition = oConditions.Add();
+
+                                oCondition.Alias = "DocEntry";
+                                oCondition.Operation = SAPbouiCOM.BoConditionOperation.co_EQUAL;
+                                oCondition.CondVal = docentry;
+
+                                SAPbouiCOM.DBDataSource ds = oNewForm.DataSources.DBDataSources.Item("@" + sptype);
+                                ds.Query(oConditions);
+                                ds = oNewForm.DataSources.DBDataSources.Item("@" + sptype + "1");
+                                ds.Query(oConditions);
+                                ((SAPbouiCOM.Matrix)oNewForm.Items.Item("grid1").Specific).LoadFromDataSource();
+
+                                UserForm_SalesPlanning.checkrow(oNewForm);
+                                oNewForm.Mode = SAPbouiCOM.BoFormMode.fm_OK_MODE;
+                            }
+
                         }
                         break;
                     case SAPbouiCOM.BoEventTypes.et_COMBO_SELECT:

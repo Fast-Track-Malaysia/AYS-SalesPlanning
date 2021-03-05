@@ -71,6 +71,7 @@
     <Compile Include="Sales Planning\CFLForm.cs" />
     <Compile Include="Sales Planning\EmailClass.cs" />
     <Compile Include="Sales Planning\ft_Functions.cs" />
+    <Compile Include="Sales Planning\MyFromEvent.cs" />
     <Compile Include="Sales Planning\Sysform_Approval50103.cs" />
     <Compile Include="Sales Planning\Sysform_ARReservedInvoice.cs" />
     <Compile Include="Sales Planning\Sysform_SalesQuotation.cs" />

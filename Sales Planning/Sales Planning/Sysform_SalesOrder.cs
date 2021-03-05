@@ -296,7 +296,9 @@ namespace FT_ADDON.AYS
                                 {
                                     if (ObjectFunctions.Approval("17"))
                                         oComboapp.Select("W", SAPbouiCOM.BoSearchKey.psk_ByValue);
-                                    SAP.SBOApplication.MessageBox("There is/are invoices overdue for this customer", 1, "Ok", "", "");
+                                    #region remove due to 20210305 update
+                                    //SAP.SBOApplication.MessageBox("There is/are invoices overdue for this customer", 1, "Ok", "", "");
+                                    #endregion
                                 }
                             }
                             errMsg = "";
@@ -318,8 +320,10 @@ namespace FT_ADDON.AYS
                                 {
                                     if (ObjectFunctions.Approval("17"))
                                         oComboapp.Select("W", SAPbouiCOM.BoSearchKey.psk_ByValue);
-                                    SAP.SBOApplication.MessageBox("Credit Limit Exceeded " + Environment.NewLine + "Limit Type - " +
-                                        limitType + Environment.NewLine + " Over Limit Amount - RM " + different.ToString("#,###,###,###.00"), 1, "Ok", "", "");
+                                    #region remove due to 20210305 update
+                                    //SAP.SBOApplication.MessageBox("Credit Limit Exceeded " + Environment.NewLine + "Limit Type - " +
+                                    //    limitType + Environment.NewLine + " Over Limit Amount - RM " + different.ToString("#,###,###,###.00"), 1, "Ok", "", "");
+                                    #endregion
                                 }
                             }
                             //ods.SetValue("U_CUsage", 0, c_usage.ToString());

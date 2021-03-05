@@ -192,6 +192,18 @@ namespace FT_ADDON.AYS
                 if (!app.udfExist("@FT_SPLAN", "RELEASE"))
                     if (!app.createField("@FT_SPLAN", "RELEASE", "Released", SAPbobsCOM.BoFieldTypes.db_Alpha, 1, "N", false, SAPbobsCOM.BoFldSubTypes.st_None, "Y:Yes|N:No", "")) goto ErrorHandler;
 
+
+                if (!app.udfExist("@FT_SPLAN", "APP"))
+                    if (!app.createField("@FT_SPLAN", "APP", "Approval", SAPbobsCOM.BoFieldTypes.db_Alpha, 1, "O", false, SAPbobsCOM.BoFldSubTypes.st_None, "Y:Approved|W:Pending|N:Reject|O:OPEN", "")) goto ErrorHandler;
+                if (!app.udfExist("@FT_SPLAN", "APPRE"))
+                    if (!app.createField("@FT_SPLAN", "APPRE", "Approval Remarks", SAPbobsCOM.BoFieldTypes.db_Alpha, 100, "")) goto ErrorHandler;
+                if (!app.udfExist("@FT_SPLAN", "APPBY"))
+                    if (!app.createField("@FT_SPLAN", "APPBY", "Approved by", SAPbobsCOM.BoFieldTypes.db_Alpha, 50, "")) goto ErrorHandler;
+                if (!app.udfExist("@FT_SPLAN", "APPDATE"))
+                    if (!app.createField("@FT_SPLAN", "APPDATE", "Approved Date", SAPbobsCOM.BoFieldTypes.db_Date, 0, "")) goto ErrorHandler;
+                if (!app.udfExist("@FT_SPLAN", "APPTIME"))
+                    if (!app.createField("@FT_SPLAN", "APPTIME", "Approved Date", SAPbobsCOM.BoFieldTypes.db_Numeric, 0, "")) goto ErrorHandler;
+
                 if (!app.createTable("FT_SPLAN1", "Sales Planning Detail", SAPbobsCOM.BoUTBTableType.bott_DocumentLines)) goto ErrorHandler;
                 if (!app.tableGotField("@FT_SPLAN1"))
                 {
@@ -403,6 +415,17 @@ namespace FT_ADDON.AYS
                     if (!app.createField("@FT_CHARGE", "FREMARKS", "Full Remarks", SAPbobsCOM.BoFieldTypes.db_Alpha, 254, "")) goto ErrorHandler;
                 if (!app.udfExist("@FT_CHARGE", "ADDRESS"))
                     if (!app.createField("@FT_CHARGE", "ADDRESS", "Address", SAPbobsCOM.BoFieldTypes.db_Alpha, 254, "")) goto ErrorHandler;
+
+                if (!app.udfExist("@FT_CHARGE", "APP"))
+                    if (!app.createField("@FT_CHARGE", "APP", "Approval", SAPbobsCOM.BoFieldTypes.db_Alpha, 1, "O", false, SAPbobsCOM.BoFldSubTypes.st_None, "Y:Approved|W:Pending|N:Reject|O:OPEN", "")) goto ErrorHandler;
+                if (!app.udfExist("@FT_CHARGE", "APPRE"))
+                    if (!app.createField("@FT_CHARGE", "APPRE", "Approval Remarks", SAPbobsCOM.BoFieldTypes.db_Alpha, 100, "")) goto ErrorHandler;
+                if (!app.udfExist("@FT_CHARGE", "APPBY"))
+                    if (!app.createField("@FT_CHARGE", "APPBY", "Approved by", SAPbobsCOM.BoFieldTypes.db_Alpha, 50, "")) goto ErrorHandler;
+                if (!app.udfExist("@FT_CHARGE", "APPDATE"))
+                    if (!app.createField("@FT_CHARGE", "APPDATE", "Approved Date", SAPbobsCOM.BoFieldTypes.db_Date, 0, "")) goto ErrorHandler;
+                if (!app.udfExist("@FT_CHARGE", "APPTIME"))
+                    if (!app.createField("@FT_CHARGE", "APPTIME", "Approved Date", SAPbobsCOM.BoFieldTypes.db_Numeric, 0, "")) goto ErrorHandler;
 
                 if (!app.createTable("FT_CHARGE1", "Charge Module Detail", SAPbobsCOM.BoUTBTableType.bott_DocumentLines)) goto ErrorHandler;
                 if (!app.tableGotField("@FT_CHARGE1"))
@@ -727,6 +750,72 @@ namespace FT_ADDON.AYS
 
                 if (!app.createUDO("FT_CFS", "Custom Form Setting", SAPbobsCOM.BoUDOObjType.boud_MasterData, "FT_CFS", "FT_CFSDL", "", SAPbobsCOM.BoYesNoEnum.tNO, SAPbobsCOM.BoYesNoEnum.tNO, SAPbobsCOM.BoYesNoEnum.tNO, SAPbobsCOM.BoYesNoEnum.tYES, SAPbobsCOM.BoYesNoEnum.tNO, "")) goto ErrorHandler; ;
 
+                string tablename = "FT_SPCLCTRL";
+                if (!app.createTable(tablename, "SP Credit Limit Control", SAPbobsCOM.BoUTBTableType.bott_NoObject)) goto ErrorHandler;
+                if (!app.tableGotField("@" + tablename))
+                {
+                    if (!app.createField("@" + tablename, "NotifyV", "Notification", SAPbobsCOM.BoFieldTypes.db_Alpha, 50, "NA", true, SAPbobsCOM.BoFldSubTypes.st_None, "MSG_NOBLOCK:Message with No Block|MSG_BLOCK:Message with Block|NA:Not Applicable", "")) goto ErrorHandler;
+                    
+                    SAPbobsCOM.UserTable oUserTable = SAP.SBOCompany.UserTables.Item(tablename);
+                    oUserTable.Code = "149";
+                    oUserTable.Name = "Sales Quotation";
+                    oUserTable.UserFields.Fields.Item("U_NotifyV").Value = "MSG_NOBLOCK";
+                    oUserTable.Add();
+
+                    oUserTable.Code = "1250000100";
+                    oUserTable.Name = "Sales Blanket Agreement";
+                    oUserTable.UserFields.Fields.Item("U_NotifyV").Value = "MSG_NOBLOCK";
+                    oUserTable.Add();
+
+                    oUserTable.Code = "139";
+                    oUserTable.Name = "Sales Order";
+                    oUserTable.UserFields.Fields.Item("U_NotifyV").Value = "MSG_BLOCK";
+                    oUserTable.Add();
+
+                    oUserTable.Code = "FT_SPLAN";
+                    oUserTable.Name = "Sales Planning";
+                    oUserTable.UserFields.Fields.Item("U_NotifyV").Value = "NA";
+                    oUserTable.Add();
+
+                    oUserTable.Code = "FT_TPPLAN";
+                    oUserTable.Name = "Transport Planning";
+                    oUserTable.UserFields.Fields.Item("U_NotifyV").Value = "NA";
+                    oUserTable.Add();
+                }
+                tablename = "FT_SPODCTRL";
+                if (!app.createTable(tablename, "SP Overdue Control", SAPbobsCOM.BoUTBTableType.bott_NoObject)) goto ErrorHandler;
+                if (!app.tableGotField("@" + tablename))
+                {
+                    if (!app.createField("@" + tablename, "NotifyV", "Notification", SAPbobsCOM.BoFieldTypes.db_Alpha, 50, "NA", true, SAPbobsCOM.BoFldSubTypes.st_None, "MSG_NOBLOCK:Message with No Block|MSG_BLOCK:Message with Block|NA:Not Applicable", "")) goto ErrorHandler;
+
+                    SAPbobsCOM.UserTable oUserTable = SAP.SBOCompany.UserTables.Item(tablename);
+                    oUserTable.Code = "149";
+                    oUserTable.Name = "Sales Quotation";
+                    oUserTable.UserFields.Fields.Item("U_NotifyV").Value = "MSG_NOBLOCK";
+                    oUserTable.Add();
+
+                    oUserTable.Code = "1250000100";
+                    oUserTable.Name = "Sales Blanket Agreement";
+                    oUserTable.UserFields.Fields.Item("U_NotifyV").Value = "MSG_NOBLOCK";
+                    oUserTable.Add();
+
+                    oUserTable.Code = "139";
+                    oUserTable.Name = "Sales Order";
+                    oUserTable.UserFields.Fields.Item("U_NotifyV").Value = "MSG_BLOCK";
+                    oUserTable.Add();
+
+                    oUserTable.Code = "FT_SPLAN";
+                    oUserTable.Name = "Sales Planning";
+                    oUserTable.UserFields.Fields.Item("U_NotifyV").Value = "NA";
+                    oUserTable.Add();
+
+                    oUserTable.Code = "FT_TPPLAN";
+                    oUserTable.Name = "Transport Planning";
+                    oUserTable.UserFields.Fields.Item("U_NotifyV").Value = "MSG_BLOCK";
+                    oUserTable.Add();
+                }
+
+
                 if (FT_ADDON.SAP.SBOCompany.InTransaction) FT_ADDON.SAP.SBOCompany.EndTransaction(SAPbobsCOM.BoWfTransOpt.wf_Commit);
             }
             catch(Exception ex)
@@ -743,14 +832,14 @@ namespace FT_ADDON.AYS
             app.createMenuItem("FT_CHARGE", "Charge Module", "2048", "FT_TPPLAN", false, SAPbouiCOM.BoMenuType.mt_STRING);
             if (ObjectFunctions.Approval("112"))
                 app.createMenuItem("SOAPPLIST", "Draft Sales Order Approval", "2048", "FT_CHARGE", false, SAPbouiCOM.BoMenuType.mt_STRING);
-            if (ObjectFunctions.Approval("17"))
-                app.createMenuItem("TPAPPLIST", "Sales Order (TP) Approval", "2048", "SOAPPLIST", false, SAPbouiCOM.BoMenuType.mt_STRING);
-            //app.createMenuItem("FT_INTERDB", "Inter Company Posting", "43520", "2048", true, SAPbouiCOM.BoMenuType.mt_POPUP);
+            //if (ObjectFunctions.Approval("17"))
+            //    app.createMenuItem("TPAPPLIST", "Sales Order (TP) Approval", "2048", "SOAPPLIST", false, SAPbouiCOM.BoMenuType.mt_STRING);
 
-            //app.createMenuItem("FT_SCNS2JV", "AR Service Credit Note to JV", "FT_INTERDB", "", true, SAPbouiCOM.BoMenuType.mt_STRING);
-            //app.createMenuItem("FT_SCN2JV", "AR Credit Note to JV", "FT_INTERDB", "FT_SCNS2JV", true, SAPbouiCOM.BoMenuType.mt_STRING);
-            //app.createMenuItem("FT_SINVS2JV", "AR Service Invoice to JV", "FT_INTERDB", "FT_SCN2JV", true, SAPbouiCOM.BoMenuType.mt_STRING);
-            //app.createMenuItem("FT_SINV2JV", "AR Invoice to JV", "FT_INTERDB", "FT_SINVS2JV", true, SAPbouiCOM.BoMenuType.mt_STRING);
+
+            //if (ObjectFunctions.Approval("FT_TPPLAN"))
+            //    app.createMenuItem("TPAPPLIST2", "Transport Planning Approval", "2048", "FT_CHARGE", false, SAPbouiCOM.BoMenuType.mt_STRING);
+            if (ObjectFunctions.Approval("FT_SPLAN"))
+                app.createMenuItem("SPAPPLIST2", "Sales Planning Approval", "2048", "FT_CHARGE", false, SAPbouiCOM.BoMenuType.mt_STRING);
 
             //GC.WaitForPendingFinalizers();
             return;

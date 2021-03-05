@@ -20,91 +20,100 @@ namespace FT_ADDON.AYS
             {
                 //FT_ADDON.SAP.iForm = FT_ADDON.SAP.SBOApplication.Forms.Item(FormUID);
                 BubbleEvent = true;
-                switch (pVal.FormTypeEx)
-                {
-                    case "60091":
-                        Sysform_ARReservedInvoice.processItemEventbefore(oForm, ref pVal, ref BubbleEvent);
-                        break;
-                    case "TPAPPLIST":
-                    case "SOAPPLIST":
-                        UserForm_Approval.processItemEventbefore(oForm, ref pVal, ref BubbleEvent);
-                        break;
-                    case "FT_SPLAN":
-                    case "FT_TPPLAN":
-                    case "FT_CHARGE":
-                        UserForm_SalesPlanning.processItemEventbefore(oForm, ref pVal, ref BubbleEvent);
-                        break;
-                    case "FT_BATCH":
-                        UserForm_Batch.processItemEventbefore(oForm, ref pVal, ref BubbleEvent);
-                        break;
-                    //case "FT_APSA":
-                    //    UserForm_APSA.processItemEventbefore(oForm, ref pVal, ref BubbleEvent);
-                    //    break;
-                    //case "FT_SHIPL":
-                    //    UserForm_ShipList.processItemEventbefore(oForm, ref pVal, ref BubbleEvent);
-                    //    break;
-                    case "FT_CFLTEXT":
-                        CFLFormText.processItemEventbefore(oForm, ref pVal, ref BubbleEvent);
-                        break;
-                    //case "FT_SHIPD":
-                    //    UserForm_ShipDoc.processItemEventbefore(oForm, ref pVal, ref BubbleEvent);
-                    //    break;
-                    case "FT_CFL":
-                        CFLForm.processItemEventbefore(oForm, ref pVal, ref BubbleEvent);
-                        break;
-                    //case "FT_SOM":
-                    case "FT_SDM":
-                        UserForm_SOmodified.processItemEventbefore(oForm, ref pVal, ref BubbleEvent);
-                        break;
-                    case "FT_CONM":
-                    case "FT_DOPTM":
-                        UserForm_CONmodified.processItemEventbefore(oForm, ref pVal, ref BubbleEvent);
-                        break;
-                    //case "FT_TEXT":
-                    //    UserForm_TextModify.processItemEventbefore(oForm, ref pVal, ref BubbleEvent);
-                    //    break;
-                    case "139":
-                        Sysform_SalesOrder.processItemEventbefore(oForm, ref pVal, ref BubbleEvent);
-                        break;
-                    //case "140":
-                    //    Sysform_SalesDelivery.processItemEventbefore(oForm, ref pVal, ref BubbleEvent);
-                    //    break;
-                    case "133":
-                        Sysform_SalesInvoice.processItemEventbefore(oForm, ref pVal, ref BubbleEvent);
-                        break;
-                    //case "179":
-                    //    Sysform_SalesCN.processItemEventbefore(oForm, ref pVal, ref BubbleEvent);
-                    //    break;
-                    case "143":
-                        Sysform_APDO.processItemEventbefore(oForm, ref pVal, ref BubbleEvent);
-                        break;
-                    case "141":
-                        Sysform_APINV.processItemEventbefore(oForm, ref pVal, ref BubbleEvent);
-                        break;
-                    //case "181":
-                    //    Sysform_APCN.processItemEventbefore(oForm, ref pVal, ref BubbleEvent);
-                    //    break;
-                    //case "142":
-                    //    Sysform_APPO.processItemEventbefore(oForm, ref pVal, ref BubbleEvent);
-                    //    break;
-                    //case "180":
-                    //    Sysform_SalesReturn.processItemEventbefore(oForm, ref pVal, ref BubbleEvent);
-                    //    break;
-                    //case "182":
-                    //    Sysform_APReturn.processItemEventbefore(oForm, ref pVal, ref BubbleEvent);
-                    //    break;
-                    case "34":
-                        Sysform_UDF.processItemEventbefore(oForm, ref pVal, ref BubbleEvent);
-                        break;
-                    //case "81":
-                    //    SysForm_PickandPackManager.processItemEventbefore(oForm, ref pVal, ref BubbleEvent);
-                    //    break;
-                    //case "134":
-                    //    Sysform_BusinessPartner.processItemEventbefore(iForm, ref pVal, ref BubbleEvent);
-                    //    break;
-                    default:
-                        break;
 
+                MyFromEvent.processItemEventbefore(oForm, ref pVal, ref BubbleEvent);
+
+                if (BubbleEvent)
+                {
+                    switch (pVal.FormTypeEx)
+                    {
+                        case "60091":
+                            Sysform_ARReservedInvoice.processItemEventbefore(oForm, ref pVal, ref BubbleEvent);
+                            break;
+                        case "TPAPPLIST":
+                        case "SOAPPLIST":
+                        case "CMAPPLIST2":
+                        case "TPAPPLIST2":
+                        case "SPAPPLIST2":
+                            UserForm_Approval.processItemEventbefore(oForm, ref pVal, ref BubbleEvent);
+                            break;
+                        case "FT_SPLAN":
+                        case "FT_TPPLAN":
+                        case "FT_CHARGE":
+                            UserForm_SalesPlanning.processItemEventbefore(oForm, ref pVal, ref BubbleEvent);
+                            break;
+                        case "FT_BATCH":
+                            UserForm_Batch.processItemEventbefore(oForm, ref pVal, ref BubbleEvent);
+                            break;
+                        //case "FT_APSA":
+                        //    UserForm_APSA.processItemEventbefore(oForm, ref pVal, ref BubbleEvent);
+                        //    break;
+                        //case "FT_SHIPL":
+                        //    UserForm_ShipList.processItemEventbefore(oForm, ref pVal, ref BubbleEvent);
+                        //    break;
+                        case "FT_CFLTEXT":
+                            CFLFormText.processItemEventbefore(oForm, ref pVal, ref BubbleEvent);
+                            break;
+                        //case "FT_SHIPD":
+                        //    UserForm_ShipDoc.processItemEventbefore(oForm, ref pVal, ref BubbleEvent);
+                        //    break;
+                        case "FT_CFL":
+                            CFLForm.processItemEventbefore(oForm, ref pVal, ref BubbleEvent);
+                            break;
+                        //case "FT_SOM":
+                        case "FT_SDM":
+                            UserForm_SOmodified.processItemEventbefore(oForm, ref pVal, ref BubbleEvent);
+                            break;
+                        case "FT_CONM":
+                        case "FT_DOPTM":
+                            UserForm_CONmodified.processItemEventbefore(oForm, ref pVal, ref BubbleEvent);
+                            break;
+                        //case "FT_TEXT":
+                        //    UserForm_TextModify.processItemEventbefore(oForm, ref pVal, ref BubbleEvent);
+                        //    break;
+                        case "139":
+                            Sysform_SalesOrder.processItemEventbefore(oForm, ref pVal, ref BubbleEvent);
+                            break;
+                        //case "140":
+                        //    Sysform_SalesDelivery.processItemEventbefore(oForm, ref pVal, ref BubbleEvent);
+                        //    break;
+                        case "133":
+                            Sysform_SalesInvoice.processItemEventbefore(oForm, ref pVal, ref BubbleEvent);
+                            break;
+                        //case "179":
+                        //    Sysform_SalesCN.processItemEventbefore(oForm, ref pVal, ref BubbleEvent);
+                        //    break;
+                        case "143":
+                            Sysform_APDO.processItemEventbefore(oForm, ref pVal, ref BubbleEvent);
+                            break;
+                        case "141":
+                            Sysform_APINV.processItemEventbefore(oForm, ref pVal, ref BubbleEvent);
+                            break;
+                        //case "181":
+                        //    Sysform_APCN.processItemEventbefore(oForm, ref pVal, ref BubbleEvent);
+                        //    break;
+                        //case "142":
+                        //    Sysform_APPO.processItemEventbefore(oForm, ref pVal, ref BubbleEvent);
+                        //    break;
+                        //case "180":
+                        //    Sysform_SalesReturn.processItemEventbefore(oForm, ref pVal, ref BubbleEvent);
+                        //    break;
+                        //case "182":
+                        //    Sysform_APReturn.processItemEventbefore(oForm, ref pVal, ref BubbleEvent);
+                        //    break;
+                        case "34":
+                            Sysform_UDF.processItemEventbefore(oForm, ref pVal, ref BubbleEvent);
+                            break;
+                        //case "81":
+                        //    SysForm_PickandPackManager.processItemEventbefore(oForm, ref pVal, ref BubbleEvent);
+                        //    break;
+                        //case "134":
+                        //    Sysform_BusinessPartner.processItemEventbefore(iForm, ref pVal, ref BubbleEvent);
+                        //    break;
+                        default:
+                            break;
+
+                    }
                 }
             }
             else
@@ -116,6 +125,9 @@ namespace FT_ADDON.AYS
                         break;
                     case "TPAPPLIST":
                     case "SOAPPLIST":
+                    case "CMAPPLIST2":
+                    case "TPAPPLIST2":
+                    case "SPAPPLIST2":
                         UserForm_Approval.processItemEventafter(oForm, ref pVal);
                         break;
                     case "FT_SPLAN":

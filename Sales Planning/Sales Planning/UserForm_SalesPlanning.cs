@@ -4,7 +4,6 @@ using System.Text;
 
 namespace FT_ADDON.AYS
 {
-
     class UserForm_SalesPlanning
     {
         public static void deletebatch(SAPbouiCOM.Form oForm, int dsrow)
@@ -51,7 +50,7 @@ namespace FT_ADDON.AYS
                         oForm.DataSources.UserDataSources.Item("docstatus").Value = "CLOSED";
                 else if (ods.GetValue("Status", 0).ToUpper().Trim() == "O")
                 {
-                    if (dsname == "FT_TPPLAN")
+                    if (dsname == "FT_SPLAN" || dsname == "FT_TPPLAN")
                     {
                         string approval = "O";
                         approval = ods.GetValue("U_APP", 0).ToUpper().Trim();
@@ -183,7 +182,7 @@ namespace FT_ADDON.AYS
                             SAPbobsCOM.Recordset rs = (SAPbobsCOM.Recordset)SAP.SBOCompany.GetBusinessObject(SAPbobsCOM.BoObjectTypes.BoRecordset);
                             if (ft_Functions.CheckCreditTerm(oForm, ods, ods1, ref errMsg))
                             {
-                                if (oForm.TypeEx == "FT_TPPLAN")
+                                if (oForm.TypeEx == "FT_SPLAN" || oForm.TypeEx == "FT_TPPLAN")
                                 {
                                     if (oForm.DataSources.DBDataSources.Item("@" + ds).GetValue("U_RELEASE", 0) == "Y")
                                     {
@@ -212,7 +211,7 @@ namespace FT_ADDON.AYS
                             }
                             else if (cnt >= 1)
                             {
-                                if (oForm.TypeEx == "FT_TPPLAN")
+                                if (oForm.TypeEx == "FT_SPLAN" || oForm.TypeEx == "FT_TPPLAN")
                                 {
                                     if (oForm.DataSources.DBDataSources.Item("@" + ds).GetValue("U_RELEASE", 0) == "Y")
                                     {
@@ -278,7 +277,7 @@ namespace FT_ADDON.AYS
                             }
                             else if (cnt >= 1)
                             {
-                                if (oForm.TypeEx == "FT_TPPLAN")
+                                if (oForm.TypeEx == "FT_SPLAN" || oForm.TypeEx == "FT_TPPLAN")
                                 {
                                     if (rs.RecordCount > 0)
                                     {
@@ -333,7 +332,7 @@ namespace FT_ADDON.AYS
                         docnum = oForm.DataSources.DBDataSources.Item("@" + ds).GetValue("DocNum", 0);
                         docentry = oForm.DataSources.DBDataSources.Item("@" + ds).GetValue("DocEntry", 0);
                         cardcode = oForm.DataSources.DBDataSources.Item("@" + ds).GetValue("U_CARDCODE", 0);
-                        if (ds == "FT_TPPLAN")
+                        if (ds == "FT_SPLAN" || ds == "FT_TPPLAN")
                         {
                             approval = oForm.DataSources.DBDataSources.Item("@" + ds).GetValue("U_APP", 0);
                             if (approval == "W" || approval == "N")
@@ -364,7 +363,7 @@ namespace FT_ADDON.AYS
                         string dsn = oForm.DataSources.UserDataSources.Item("dsname").ValueEx;
                         SAPbobsCOM.Recordset oRS = (SAPbobsCOM.Recordset)SAP.SBOCompany.GetBusinessObject(SAPbobsCOM.BoObjectTypes.BoRecordset);
                         bool appreq = false;
-                        if (dsn == "FT_TPPLAN")
+                        if (dsn == "FT_SPLAN" || dsn == "FT_TPPLAN")
                         {
                             oRS.DoQuery("select top 1 DocNum, DocEntry, U_CARDCODE, U_APP from [@" + dsn + "] order by DocEntry desc");
 
@@ -1374,19 +1373,32 @@ namespace FT_ADDON.AYS
 
                                         if (ods.GetValue("U_RELEASE", 0) == "N")
                                         {
-                                            int rtn = SAP.SBOApplication.MessageBox("Do You want to RELEASE this Transport Planning.", 1, "Yes", "No", "Cancel");
-                                            if (rtn == 1)
+                                            string app = ods.GetValue("U_APP", 0);
+                                            if (string.IsNullOrEmpty(app)) app = "";
+                                            if (app == "W")
                                             {
-                                                ods.SetValue("U_RELEASE", 0, "Y");
+                                                SAP.SBOApplication.MessageBox("Document is pending for approval.");
                                             }
-                                            else if (rtn == 2)
+                                            else if (app == "N")
                                             {
-                                                ods.SetValue("U_RELEASE", 0, "N");
+                                                SAP.SBOApplication.MessageBox("Document is rejected.");
                                             }
                                             else
                                             {
-                                                BubbleEvent = false;
-                                                return;
+                                                int rtn = SAP.SBOApplication.MessageBox("Do You want to RELEASE this " + oForm.Title + ".", 1, "Yes", "No", "Cancel");
+                                                if (rtn == 1)
+                                                {
+                                                    ods.SetValue("U_RELEASE", 0, "Y");
+                                                }
+                                                else if (rtn == 2)
+                                                {
+                                                    ods.SetValue("U_RELEASE", 0, "N");
+                                                }
+                                                else
+                                                {
+                                                    BubbleEvent = false;
+                                                    return;
+                                                }
                                             }
                                         }
                                     }
@@ -1992,7 +2004,7 @@ namespace FT_ADDON.AYS
                         BubbleEvent = false;
                         return;
                     }
-                    if (oForm.TypeEx == "FT_TPPLAN")
+                    if (oForm.TypeEx == "FT_SPLAN" || oForm.TypeEx == "FT_TPPLAN")
                     {
                         //if (oForm.DataSources.DBDataSources.Item("@" + dsname).GetValue("U_RELEASE", 0) == "Y")
                         //{
@@ -2239,7 +2251,7 @@ namespace FT_ADDON.AYS
                             }
                             else
                             {
-                                if (oForm.TypeEx == "FT_TPPLAN")
+                                if (oForm.TypeEx == "FT_SPLAN" || oForm.TypeEx == "FT_TPPLAN")
                                 {
                                     if (oDS.GetValue("U_APP", 0) == "W")
                                     {
