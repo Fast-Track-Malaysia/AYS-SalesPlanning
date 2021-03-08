@@ -44,16 +44,17 @@ namespace FT_ADDON.AYS
 
 
                 if (ods.GetValue("Status", 0).ToUpper().Trim() == "C")
+                {
                     if (ods.GetValue("Canceled", 0).ToUpper().Trim() == "Y")
                         oForm.DataSources.UserDataSources.Item("docstatus").Value = "CANCELLED";
                     else
                         oForm.DataSources.UserDataSources.Item("docstatus").Value = "CLOSED";
+                }
                 else if (ods.GetValue("Status", 0).ToUpper().Trim() == "O")
                 {
                     if (dsname == "FT_SPLAN" || dsname == "FT_TPPLAN")
                     {
-                        string approval = "O";
-                        approval = ods.GetValue("U_APP", 0).ToUpper().Trim();
+                        string approval = ods.GetValue("U_APP", 0).ToUpper().Trim();
                         switch (approval)
                         {
                             case "O":
@@ -63,6 +64,8 @@ namespace FT_ADDON.AYS
                                 break;
                             case "Y":
                                 oForm.DataSources.UserDataSources.Item("docstatus").Value = "APPROVED";
+                                if (ods.GetValue("U_RELEASE", 0).ToUpper().Trim() == "Y")
+                                    oForm.DataSources.UserDataSources.Item("docstatus").Value = "RELEASED";
                                 break;
                             case "N":
                                 oForm.DataSources.UserDataSources.Item("docstatus").Value = "REJECTED";
@@ -83,7 +86,8 @@ namespace FT_ADDON.AYS
                     }
 
                 }
-                string status = oForm.DataSources.UserDataSources.Item("docstatus").Value.Trim();
+                string status = ods.GetValue("Status", 0).ToUpper().Trim();
+                string release = ods.GetValue("U_RELEASE", 0).ToUpper().Trim();
                 ods = (SAPbouiCOM.DBDataSource)oForm.DataSources.DBDataSources.Item("@" + dsname1);
                 string comparecolumn = "";
                 switch (dsname)
@@ -102,7 +106,7 @@ namespace FT_ADDON.AYS
                     for (int x = 0; x < ods.Size; x++)
                     {
                         ods.SetValue("U_ORIQTY", x, ods.GetValue("U_QUANTITY", x));
-                        if (status == "OPEN" && ods.GetValue("U_LSTATUS", x) == "O")
+                        if (status == "O" && release == "N" && ods.GetValue("U_LSTATUS", x) == "O")
                         {
                             if (comparecolumn != "")
                             {
@@ -173,6 +177,7 @@ namespace FT_ADDON.AYS
                 switch (BusinessObjectInfo.EventType)
                 {
                     case SAPbouiCOM.BoEventTypes.et_FORM_DATA_UPDATE:
+/*
                         if (oForm.TypeEx == "FT_SPLAN" || oForm.TypeEx == "FT_TPPLAN")
                         {
                             ds = oForm.DataSources.UserDataSources.Item("dsname").ValueEx;
@@ -232,6 +237,7 @@ namespace FT_ADDON.AYS
                             }
                         }
                         //BubbleEvent = false;
+*/
                         break;
                     case SAPbouiCOM.BoEventTypes.et_FORM_DATA_ADD:
                         if (oForm.TypeEx == "FT_SPLAN" || oForm.TypeEx == "FT_TPPLAN")
@@ -244,28 +250,20 @@ namespace FT_ADDON.AYS
                             rs.DoQuery("select count(*) from [@FT_RAPPMSG] where U_objcode = '" + oForm.TypeEx + "'");
                             if (ft_Functions.CheckCreditTerm(oForm, ods, ods1, ref errMsg))
                             {
-                                if (oForm.TypeEx == "FT_TPPLAN")
+                                if (ObjectFunctions.Approval(oForm.TypeEx))
                                 {
-                                    if (rs.RecordCount > 0)
+                                    if (oForm.DataSources.DBDataSources.Item("@" + ds).GetValue("U_RELEASE", 0) == "Y")
                                     {
-                                        if (oForm.DataSources.DBDataSources.Item("@" + ds).GetValue("U_RELEASE", 0) == "Y")
-                                        {
-                                            //if (rs.Fields.Item(0).Value.ToString() != "0")
-                                            //{
-                                            if (ObjectFunctions.Approval("17"))
-                                            {
-                                                oForm.DataSources.DBDataSources.Item("@" + ds).SetValue("U_APP", 0, "W");
-                                                oForm.DataSources.DBDataSources.Item("@" + ds).SetValue("U_APPBY", 0, SAP.SBOCompany.UserName);
-                                                oForm.DataSources.DBDataSources.Item("@" + ds).SetValue("U_APPDATE", 0, DateTime.Today.ToString("yyyyMMdd"));
-                                                oForm.DataSources.DBDataSources.Item("@" + ds).SetValue("U_APPTIME", 0, DateTime.Now.ToString("HHmm"));
-                                            }
-                                            //}
-                                            //SAP.SBOApplication.SetStatusBarMessage("Approval Required. There is/are invoices overdue for this customer", SAPbouiCOM.BoMessageTime.bmt_Medium, false);
-                                        }
+                                        oForm.DataSources.DBDataSources.Item("@" + ds).SetValue("U_RELEASE", 0, "N");
+                                        SAP.SBOApplication.MessageBox("Cannot Release." + Environment.NewLine + "There is/are invoices overdue for this customer", 1, "Ok", "", "");
+                                        BubbleEvent = false;
+                                        break;
                                     }
+                                    oForm.DataSources.DBDataSources.Item("@" + ds).SetValue("U_APP", 0, "W");
+                                    oForm.DataSources.DBDataSources.Item("@" + ds).SetValue("U_APPBY", 0, SAP.SBOCompany.UserName);
+                                    oForm.DataSources.DBDataSources.Item("@" + ds).SetValue("U_APPDATE", 0, DateTime.Today.ToString("yyyyMMdd"));
+                                    oForm.DataSources.DBDataSources.Item("@" + ds).SetValue("U_APPTIME", 0, DateTime.Now.ToString("HHmm"));
                                 }
-                                else
-                                    SAP.SBOApplication.MessageBox("There is/are invoices overdue for this customer", 1, "Ok", "", "");
                             }
                             errMsg = "";
                             int cnt = 0;
@@ -277,30 +275,21 @@ namespace FT_ADDON.AYS
                             }
                             else if (cnt >= 1)
                             {
-                                if (oForm.TypeEx == "FT_SPLAN" || oForm.TypeEx == "FT_TPPLAN")
+                                if (ObjectFunctions.Approval(oForm.TypeEx))
                                 {
-                                    if (rs.RecordCount > 0)
+                                    if (oForm.DataSources.DBDataSources.Item("@" + ds).GetValue("U_RELEASE", 0) == "Y")
                                     {
-                                        if (oForm.DataSources.DBDataSources.Item("@" + ds).GetValue("U_RELEASE", 0) == "Y")
-                                        {
-                                            //if (rs.Fields.Item(0).Value.ToString() != "0")
-                                            //{
-                                            if (ObjectFunctions.Approval("17"))
-                                            {
-                                                oForm.DataSources.DBDataSources.Item("@" + ds).SetValue("U_APP", 0, "W");
-                                                oForm.DataSources.DBDataSources.Item("@" + ds).SetValue("U_APPBY", 0, SAP.SBOCompany.UserName);
-                                                oForm.DataSources.DBDataSources.Item("@" + ds).SetValue("U_APPDATE", 0, DateTime.Today.ToString("yyyyMMdd"));
-                                                oForm.DataSources.DBDataSources.Item("@" + ds).SetValue("U_APPTIME", 0, DateTime.Now.ToString("HHmm"));
-                                            }
-                                            //}
-                                            //SAP.SBOApplication.SetStatusBarMessage("Approval Required. Credit Limit Exceeded " + Environment.NewLine + "Limit Type - " +
-                                            //limitType + Environment.NewLine + " Over Limit Amount - RM " + different.ToString("#,###,###,###.00"), SAPbouiCOM.BoMessageTime.bmt_Medium, false);
-                                        }
+                                        oForm.DataSources.DBDataSources.Item("@" + ds).SetValue("U_RELEASE", 0, "N");
+                                        SAP.SBOApplication.MessageBox("Cannot Release." + Environment.NewLine + "Credit Limit Exceeded " + Environment.NewLine + "Limit Type - " +
+                                            limitType + Environment.NewLine + " Over Limit Amount - RM " + different.ToString("#,###,###,###.00"), 1, "Ok", "", "");
+                                        BubbleEvent = false;
+                                        break;
                                     }
+                                    oForm.DataSources.DBDataSources.Item("@" + ds).SetValue("U_APP", 0, "W");
+                                    oForm.DataSources.DBDataSources.Item("@" + ds).SetValue("U_APPBY", 0, SAP.SBOCompany.UserName);
+                                    oForm.DataSources.DBDataSources.Item("@" + ds).SetValue("U_APPDATE", 0, DateTime.Today.ToString("yyyyMMdd"));
+                                    oForm.DataSources.DBDataSources.Item("@" + ds).SetValue("U_APPTIME", 0, DateTime.Now.ToString("HHmm"));
                                 }
-                                else
-                                    SAP.SBOApplication.MessageBox("Credit Limit Exceeded " + Environment.NewLine + "Limit Type - " +
-                                    limitType + Environment.NewLine + " Over Limit Amount - RM " + different.ToString("#,###,###,###.00"), 1, "Ok", "", "");
                             }
                         }
                         //BubbleEvent = false;
@@ -327,6 +316,7 @@ namespace FT_ADDON.AYS
                 {
                     case SAPbouiCOM.BoEventTypes.et_FORM_DATA_UPDATE:
                         if (!BusinessObjectInfo.ActionSuccess) break;
+/*
                         string ds = oForm.DataSources.UserDataSources.Item("dsname").ValueEx;
 
                         docnum = oForm.DataSources.DBDataSources.Item("@" + ds).GetValue("DocNum", 0);
@@ -351,11 +341,11 @@ namespace FT_ADDON.AYS
                         }
                         else
                         {
-                            sendMsg(ds, "U", docentry, oForm.Title + " " + docnum, "Document Updated  of Customer[" + cardcode + "]", oForm.Title + " " + docnum);
+                            sendMsg(ds, "U", docentry, oForm.Title + " " + docnum, "Document Updated of Customer[" + cardcode + "]", oForm.Title + " " + docnum);
                         }
 
                         genDO(oForm, int.Parse(oForm.DataSources.DBDataSources.Item("@" + ds).GetValue("DocEntry", 0)));
-
+*/
                         break;
                     case SAPbouiCOM.BoEventTypes.et_FORM_DATA_ADD:
                         if (!BusinessObjectInfo.ActionSuccess) break;
@@ -403,9 +393,9 @@ namespace FT_ADDON.AYS
 
                         if (docnum != "")
                         {
-                            if (appreq)
-                                SAP.SBOApplication.MessageBox("Doc No = " + docnum + System.Environment.NewLine + "Credit Control Approval Required.");
-                            else
+                            //if (appreq)
+                            //    SAP.SBOApplication.MessageBox("Doc No = " + docnum + System.Environment.NewLine + "Credit Control Approval Required.");
+                            //else
                                 SAP.SBOApplication.MessageBox("Doc No = " + docnum);
                         }
                         //SAPbobsCOM.Recordset oRS = (SAPbobsCOM.Recordset)SAP.SBOCompany.GetBusinessObject(SAPbobsCOM.BoObjectTypes.BoRecordset);
@@ -1365,7 +1355,9 @@ namespace FT_ADDON.AYS
                                 }
 
                                 string dsname = oForm.DataSources.UserDataSources.Item("dsname").ValueEx;
-                                if (oForm.DataSources.UserDataSources.Item("DocStatus").ValueEx == "OPEN")
+                                string status = oForm.DataSources.DBDataSources.Item("@" + dsname).GetValue("Status", 0).Trim();
+                                string release = oForm.DataSources.DBDataSources.Item("@" + dsname).GetValue("U_RELEASE", 0).Trim();
+                                if (status == "O" && release == "N")
                                 {
                                     if (dsname == "FT_TPPLAN" || dsname == "FT_SPLAN")
                                     {

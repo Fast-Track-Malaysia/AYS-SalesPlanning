@@ -348,36 +348,82 @@ namespace FT_ADDON.AYS
 
                         objecttype = oForm.DataSources.UserDataSources.Item("objecttype").ValueEx;
 
+                        if (pVal.ColUID == "T_ENTRY")
+                        {
+                            if (sptype == "FT_SPLAN" || sptype == "FT_TPPLAN" || sptype == "FT_CHARGE")
+                            { }
+                            else
+                                break;
+                        }
+                        else if (pVal.ColUID == "DocEntry")
+                        {
+                            if (objecttype == "FT_SPLAN" || objecttype == "FT_TPPLAN" || objecttype == "FT_CHARGE")
+                            { }
+                            else
+                                break;
+                        }
+
                         if (sysobj != "Y")
                         {
                             SAPbouiCOM.DataTable oDataTable = oForm.DataSources.DataTables.Item("cfl");
                             SAPbouiCOM.Grid oGrid = (SAPbouiCOM.Grid)oForm.Items.Item(pVal.ItemUID).Specific;
                             oGrid.Rows.SelectedRows.Add(pVal.Row);
-                            oForm.DataSources.UserDataSources.Item("row").Value = pVal.Row.ToString();
 
+                            if (pVal.ColUID == "T_ENTRY")
+                            {
+                                oForm.DataSources.UserDataSources.Item("row").Value = pVal.Row.ToString();
 
-                            string docentry = oDataTable.GetValue("DocEntry", pVal.Row).ToString();
-                            string docnum = oDataTable.GetValue("DocNum", pVal.Row).ToString();
+                                string docentry = oDataTable.GetValue("T_ENTRY", pVal.Row).ToString();
+                                string docnum = oDataTable.GetValue("T_DOCNUM", pVal.Row).ToString();
 
-                            InitForm.FT_SPLANscreenpainter(objecttype, objecttype + "1", "");
+                                InitForm.FT_SPLANscreenpainter(sptype, sptype + "1", "");
 
-                            SAPbouiCOM.Form oNewForm = SAP.SBOApplication.Forms.ActiveForm;
+                                SAPbouiCOM.Form oNewForm = SAP.SBOApplication.Forms.ActiveForm;
 
-                            SAPbouiCOM.Conditions oConditions = new SAPbouiCOM.Conditions();
-                            SAPbouiCOM.Condition oCondition = oConditions.Add();
+                                SAPbouiCOM.Conditions oConditions = new SAPbouiCOM.Conditions();
+                                SAPbouiCOM.Condition oCondition = oConditions.Add();
 
-                            oCondition.Alias = "DocEntry";
-                            oCondition.Operation = SAPbouiCOM.BoConditionOperation.co_EQUAL;
-                            oCondition.CondVal = docentry;
+                                oCondition.Alias = "DocEntry";
+                                oCondition.Operation = SAPbouiCOM.BoConditionOperation.co_EQUAL;
+                                oCondition.CondVal = docentry;
 
-                            SAPbouiCOM.DBDataSource ds = oNewForm.DataSources.DBDataSources.Item("@" + objecttype);
-                            ds.Query(oConditions);
-                            ds = oNewForm.DataSources.DBDataSources.Item("@" + objecttype + "1");
-                            ds.Query(oConditions);
-                            ((SAPbouiCOM.Matrix)oNewForm.Items.Item("grid1").Specific).LoadFromDataSource();
+                                SAPbouiCOM.DBDataSource ds = oNewForm.DataSources.DBDataSources.Item("@" + sptype);
+                                ds.Query(oConditions);
+                                ds = oNewForm.DataSources.DBDataSources.Item("@" + sptype + "1");
+                                ds.Query(oConditions);
+                                ((SAPbouiCOM.Matrix)oNewForm.Items.Item("grid1").Specific).LoadFromDataSource();
 
-                            UserForm_SalesPlanning.checkrow(oNewForm);
-                            oNewForm.Mode = SAPbouiCOM.BoFormMode.fm_OK_MODE;
+                                UserForm_SalesPlanning.checkrow(oNewForm);
+                                oNewForm.Mode = SAPbouiCOM.BoFormMode.fm_OK_MODE;
+                            }
+                            else if (pVal.ColUID == "DocEntry")
+                            {
+                                oForm.DataSources.UserDataSources.Item("row").Value = pVal.Row.ToString();
+
+                                string docentry = oDataTable.GetValue("DocEntry", pVal.Row).ToString();
+                                string docnum = oDataTable.GetValue("DocNum", pVal.Row).ToString();
+
+                                InitForm.FT_SPLANscreenpainter(objecttype, objecttype + "1", "");
+
+                                SAPbouiCOM.Form oNewForm = SAP.SBOApplication.Forms.ActiveForm;
+
+                                SAPbouiCOM.Conditions oConditions = new SAPbouiCOM.Conditions();
+                                SAPbouiCOM.Condition oCondition = oConditions.Add();
+
+                                oCondition.Alias = "DocEntry";
+                                oCondition.Operation = SAPbouiCOM.BoConditionOperation.co_EQUAL;
+                                oCondition.CondVal = docentry;
+
+                                SAPbouiCOM.DBDataSource ds = oNewForm.DataSources.DBDataSources.Item("@" + objecttype);
+                                ds.Query(oConditions);
+                                ds = oNewForm.DataSources.DBDataSources.Item("@" + objecttype + "1");
+                                ds.Query(oConditions);
+                                ((SAPbouiCOM.Matrix)oNewForm.Items.Item("grid1").Specific).LoadFromDataSource();
+
+                                UserForm_SalesPlanning.checkrow(oNewForm);
+                                oNewForm.Mode = SAPbouiCOM.BoFormMode.fm_OK_MODE;
+                            }
+
                         }
                         else
                         {
@@ -420,7 +466,7 @@ namespace FT_ADDON.AYS
                                 string docentry = oDataTable.GetValue("DocEntry", pVal.Row).ToString();
                                 string docnum = oDataTable.GetValue("DocNum", pVal.Row).ToString();
 
-                                InitForm.FT_SPLANscreenpainter(sptype, sptype + "1", "");
+                                InitForm.FT_SPLANscreenpainter(objecttype, objecttype + "1", "");
 
                                 SAPbouiCOM.Form oNewForm = SAP.SBOApplication.Forms.ActiveForm;
 
@@ -431,9 +477,9 @@ namespace FT_ADDON.AYS
                                 oCondition.Operation = SAPbouiCOM.BoConditionOperation.co_EQUAL;
                                 oCondition.CondVal = docentry;
 
-                                SAPbouiCOM.DBDataSource ds = oNewForm.DataSources.DBDataSources.Item("@" + sptype);
+                                SAPbouiCOM.DBDataSource ds = oNewForm.DataSources.DBDataSources.Item("@" + objecttype);
                                 ds.Query(oConditions);
-                                ds = oNewForm.DataSources.DBDataSources.Item("@" + sptype + "1");
+                                ds = oNewForm.DataSources.DBDataSources.Item("@" + objecttype + "1");
                                 ds.Query(oConditions);
                                 ((SAPbouiCOM.Matrix)oNewForm.Items.Item("grid1").Specific).LoadFromDataSource();
 
