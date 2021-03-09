@@ -55,6 +55,7 @@ namespace FT_ADDON.AYS
                     if (dsname == "FT_SPLAN" || dsname == "FT_TPPLAN")
                     {
                         string approval = ods.GetValue("U_APP", 0).ToUpper().Trim();
+                        if (string.IsNullOrEmpty(approval)) approval = "O";
                         switch (approval)
                         {
                             case "O":
@@ -1366,7 +1367,7 @@ namespace FT_ADDON.AYS
                                         if (ods.GetValue("U_RELEASE", 0) == "N")
                                         {
                                             string app = ods.GetValue("U_APP", 0);
-                                            if (string.IsNullOrEmpty(app)) app = "";
+                                            if (string.IsNullOrEmpty(app)) app = "O";
                                             if (app == "W")
                                             {
                                                 SAP.SBOApplication.MessageBox("Document is pending for approval.");
@@ -2257,11 +2258,12 @@ namespace FT_ADDON.AYS
                                     }
                                     else
                                     {
-                                        oDS.SetValue("U_APP", 0, "O");
+                                        //oDS.SetValue("U_APP", 0, "O");
                                         oDS.SetValue("U_RELEASE", 0, "N");
 
                                         docentry = int.Parse(oDS.GetValue("DocEntry", 0));
-                                        sql = "update [@" + oForm.TypeEx + "] set U_APP = 'O', U_RELEASE = 'N' where docentry = " + docentry;
+                                        //sql = "update [@" + oForm.TypeEx + "] set U_APP = 'O', U_RELEASE = 'N' where docentry = " + docentry;
+                                        sql = "update [@" + oForm.TypeEx + "] set U_RELEASE = 'N' where docentry = " + docentry;
                                         rs.DoQuery(sql);
 
                                         SAP.SBOApplication.ActivateMenuItem("1289");
