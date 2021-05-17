@@ -310,7 +310,7 @@ namespace FT_ADDON.AYS
                         UserForm_SalesPlanning.processDataEventbefore(oForm, ref BusinessObjectInfo, ref BubbleEvent);
                         break;
                     case "149":
-                        Sysform_SalesQuotation.processDataEventbefore(oForm, ref BusinessObjectInfo, ref BubbleEvent);
+                        //Sysform_SalesQuotation.processDataEventbefore(oForm, ref BusinessObjectInfo, ref BubbleEvent);
                         break;
                     case "139":
                         Sysform_SalesOrder.processDataEventbefore(oForm, ref BusinessObjectInfo, ref BubbleEvent);
