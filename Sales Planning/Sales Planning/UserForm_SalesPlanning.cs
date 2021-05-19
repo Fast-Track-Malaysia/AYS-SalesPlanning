@@ -247,8 +247,8 @@ namespace FT_ADDON.AYS
                             ds1 = oForm.DataSources.UserDataSources.Item("dsname1").ValueEx;
                             ods = oForm.DataSources.DBDataSources.Item("@" + ds);
                             ods1 = oForm.DataSources.DBDataSources.Item("@" + ds1);
-                            SAPbobsCOM.Recordset rs = (SAPbobsCOM.Recordset)SAP.SBOCompany.GetBusinessObject(SAPbobsCOM.BoObjectTypes.BoRecordset);
-                            rs.DoQuery("select count(*) from [@FT_RAPPMSG] where U_objcode = '" + oForm.TypeEx + "'");
+                            //SAPbobsCOM.Recordset rs = (SAPbobsCOM.Recordset)SAP.SBOCompany.GetBusinessObject(SAPbobsCOM.BoObjectTypes.BoRecordset);
+                            //rs.DoQuery("select count(*) from [@FT_RAPPMSG] where U_objcode = '" + oForm.TypeEx + "'");
                             if (ft_Functions.CheckCreditTerm(oForm, ods, ods1, ref errMsg))
                             {
                                 if (ObjectFunctions.Approval(oForm.TypeEx))

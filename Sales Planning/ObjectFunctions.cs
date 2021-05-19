@@ -67,9 +67,20 @@ namespace FT_ADDON
         public static bool Approval(string objcode)
         {
             //return true;
-
             SAPbobsCOM.Recordset ors = (SAPbobsCOM.Recordset)SAP.SBOCompany.GetBusinessObject(SAPbobsCOM.BoObjectTypes.BoRecordset);
             string sql = "select * from [@FT_APPUSER] where U_OBJCODE = '" + objcode + "'";
+            ors.DoQuery(sql);
+            if (ors.RecordCount > 0)
+            {
+                return true;
+            }
+            return false;
+        }
+        public static bool Approval(string objcode, string username)
+        {
+            //return true;
+            SAPbobsCOM.Recordset ors = (SAPbobsCOM.Recordset)SAP.SBOCompany.GetBusinessObject(SAPbobsCOM.BoObjectTypes.BoRecordset);
+            string sql = "select * from [@FT_APPUSER] where U_OBJCODE = '" + objcode + "' and U_USERID = '" + username + "'";
             ors.DoQuery(sql);
             if (ors.RecordCount > 0)
             {
