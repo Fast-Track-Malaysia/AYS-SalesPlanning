@@ -831,7 +831,8 @@ namespace FT_ADDON.AYS
             app.createMenuItem("FT_SPLAN", "Sales Planning", "2048", "2050", false, SAPbouiCOM.BoMenuType.mt_STRING);
             app.createMenuItem("FT_TPPLAN", "Transport Planning", "2048", "FT_SPLAN", false, SAPbouiCOM.BoMenuType.mt_STRING);
             app.createMenuItem("FT_CHARGE", "Charge Module", "2048", "FT_TPPLAN", false, SAPbouiCOM.BoMenuType.mt_STRING);
-            if (ObjectFunctions.Approval("112", username))
+
+            if (ObjectFunctions.Approval("17", username))
                 app.createMenuItem("SOAPPLIST", "Draft Sales Order Approval", "2048", "FT_CHARGE", false, SAPbouiCOM.BoMenuType.mt_STRING);
             //if (ObjectFunctions.Approval("17"))
             //    app.createMenuItem("TPAPPLIST", "Sales Order (TP) Approval", "2048", "SOAPPLIST", false, SAPbouiCOM.BoMenuType.mt_STRING);
@@ -840,8 +841,10 @@ namespace FT_ADDON.AYS
             //if (ObjectFunctions.Approval("FT_TPPLAN"))
             //    app.createMenuItem("TPAPPLIST2", "Transport Planning Approval", "2048", "FT_CHARGE", false, SAPbouiCOM.BoMenuType.mt_STRING);
             if (ObjectFunctions.Approval("FT_SPLAN", username))
-                app.createMenuItem("SPAPPLIST2", "Sales Planning Approval", "2048", "FT_CHARGE", false, SAPbouiCOM.BoMenuType.mt_STRING);
+                app.createMenuItem("SPAPPLIST", "Sales Planning Approval", "2048", "FT_CHARGE", false, SAPbouiCOM.BoMenuType.mt_STRING);
 
+            if (ObjectFunctions.Approval("FT_TPPLAN", username))
+                app.createMenuItem("SPAPPLIST", "Sales Planning Approval", "2048", "FT_CHARGE", false, SAPbouiCOM.BoMenuType.mt_STRING);
             //GC.WaitForPendingFinalizers();
             return;
 

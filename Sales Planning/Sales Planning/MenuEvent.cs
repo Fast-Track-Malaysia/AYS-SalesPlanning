@@ -22,18 +22,18 @@ namespace FT_ADDON.AYS
                 case "FT_CHARGE":
                     InitForm.FT_SPLANscreenpainter("FT_CHARGE", "FT_CHARGE1", "FT_CHARGE2");
                     break;
-                case "SPAPPLIST2":
-                    InitForm.approval(pVal.MenuUID, "003", "FT_SPLAN", "@FT_SPLAN", "FT_SPLAN1", "Sales Planning Approval", false, "17");
-                    break;
-                case "TPAPPLIST2":
-                    InitForm.approval(pVal.MenuUID, "004", "FT_TPPLAN", "@FT_TPPLAN", "FT_TPPLAN1", "Transport Planning Approval", false, "FT_SPLAN");
-                    break;
                 //case "TPAPPLIST":
                 //    InitForm.approval(pVal.MenuUID, "002", "17", "ORDR", "RDR1", "Sales Order (TP) Approval", true, "FT_TPPLAN");
                 //    break;
                 case "SOAPPLIST":
-                    //InitForm.approval(pVal.MenuUID, "17", "ORDR", "RDR1", "Sales Order Approval", true);
-                    InitForm.approval(pVal.MenuUID, "001", "112", "ODRF", "DRF1", "Draft Sales Order Approval", true, "");
+                    InitForm.approval(pVal.MenuUID, "002", "17", "ORDR", "RDR1", "Sales Order Approval", true, "");
+                    //InitForm.approval(pVal.MenuUID, "001", "112", "ODRF", "DRF1", "Draft Sales Order Approval", true, "");
+                    break;
+                case "SPAPPLIST":
+                    InitForm.approval(pVal.MenuUID, "003", "FT_SPLAN", "@FT_SPLAN", "FT_SPLAN1", "Sales Planning Approval", false, "17");
+                    break;
+                case "TPAPPLIST":
+                    InitForm.approval(pVal.MenuUID, "004", "FT_TPPLAN", "@FT_TPPLAN", "FT_TPPLAN1", "Transport Planning Approval", false, "17");
                     break;
                 default:
                     break;

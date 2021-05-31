@@ -128,6 +128,7 @@ namespace FT_ADDON.AYS
             catch (Exception ex)
             {
                 FT_ADDON.SAP.SBOApplication.MessageBox(ex.Message, 1, "Ok", "", "");
+                BubbleEvent = false;
             }
         }
         public static void processItemEventafter(SAPbouiCOM.Form oForm, ref SAPbouiCOM.ItemEvent pVal)
@@ -226,6 +227,8 @@ namespace FT_ADDON.AYS
                 switch (BusinessObjectInfo.EventType)
                 {
                     case SAPbouiCOM.BoEventTypes.et_FORM_DATA_ADD:
+                        break; // 20210531
+
                         SAPbouiCOM.DBDataSource ods = oForm.DataSources.DBDataSources.Item("ORDR");
                         SAPbouiCOM.DBDataSource ods1 = oForm.DataSources.DBDataSources.Item("RDR1");
 
@@ -286,7 +289,6 @@ namespace FT_ADDON.AYS
 
                                 oEdit = (SAPbouiCOM.EditText)oForm.Items.Item("U_CTERM").Specific;
                                 oEdit.String = "Y";
-
                                 if (result)
                                 {
                                     if (ObjectFunctions.Approval("112"))
@@ -304,6 +306,7 @@ namespace FT_ADDON.AYS
                             errMsg = "";
                             int cnt = 0;
                             cnt = ft_Functions.CheckCreditLimit(oForm, ods, ods1, ref errMsg, ref limitType, ref different, ref c_usage, ref t_limit, ref c_limit);
+                            
                             if (cnt == -1)
                             {
                                 BubbleEvent = false;
@@ -326,6 +329,7 @@ namespace FT_ADDON.AYS
                                     #endregion
                                 }
                             }
+                            
                             //ods.SetValue("U_CUsage", 0, c_usage.ToString());
                             //ods.SetValue("U_TLimit", 0, t_limit.ToString());
                             //ods.SetValue("U_CLimit", 0, c_limit.ToString());

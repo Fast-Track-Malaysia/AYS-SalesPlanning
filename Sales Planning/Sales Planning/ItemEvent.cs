@@ -21,8 +21,6 @@ namespace FT_ADDON.AYS
                 //FT_ADDON.SAP.iForm = FT_ADDON.SAP.SBOApplication.Forms.Item(FormUID);
                 BubbleEvent = true;
 
-                MyFromEvent.processItemEventbefore(oForm, ref pVal, ref BubbleEvent);
-
                 if (BubbleEvent)
                 {
                     switch (pVal.FormTypeEx)
@@ -114,6 +112,8 @@ namespace FT_ADDON.AYS
                             break;
 
                     }
+                    if (BubbleEvent)
+                        MyFromEvent.processItemEventbefore(oForm, ref pVal, ref BubbleEvent);
                 }
             }
             else

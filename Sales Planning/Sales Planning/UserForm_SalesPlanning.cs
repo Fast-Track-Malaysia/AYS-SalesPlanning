@@ -251,8 +251,8 @@ namespace FT_ADDON.AYS
                             //rs.DoQuery("select count(*) from [@FT_RAPPMSG] where U_objcode = '" + oForm.TypeEx + "'");
                             if (ft_Functions.CheckCreditTerm(oForm, ods, ods1, ref errMsg))
                             {
-                                if (ObjectFunctions.Approval(oForm.TypeEx))
-                                {
+                                //if (ObjectFunctions.Approval(oForm.TypeEx))
+                                //{
                                     if (oForm.DataSources.DBDataSources.Item("@" + ds).GetValue("U_RELEASE", 0) == "Y")
                                     {
                                         oForm.DataSources.DBDataSources.Item("@" + ds).SetValue("U_RELEASE", 0, "N");
@@ -260,11 +260,11 @@ namespace FT_ADDON.AYS
                                         BubbleEvent = false;
                                         break;
                                     }
-                                    oForm.DataSources.DBDataSources.Item("@" + ds).SetValue("U_APP", 0, "W");
-                                    oForm.DataSources.DBDataSources.Item("@" + ds).SetValue("U_APPBY", 0, SAP.SBOCompany.UserName);
-                                    oForm.DataSources.DBDataSources.Item("@" + ds).SetValue("U_APPDATE", 0, DateTime.Today.ToString("yyyyMMdd"));
-                                    oForm.DataSources.DBDataSources.Item("@" + ds).SetValue("U_APPTIME", 0, DateTime.Now.ToString("HHmm"));
-                                }
+                                    //oForm.DataSources.DBDataSources.Item("@" + ds).SetValue("U_APP", 0, "W");
+                                    //oForm.DataSources.DBDataSources.Item("@" + ds).SetValue("U_APPBY", 0, SAP.SBOCompany.UserName);
+                                    //oForm.DataSources.DBDataSources.Item("@" + ds).SetValue("U_APPDATE", 0, DateTime.Today.ToString("yyyyMMdd"));
+                                    //oForm.DataSources.DBDataSources.Item("@" + ds).SetValue("U_APPTIME", 0, DateTime.Now.ToString("HHmm"));
+                                //}
                             }
                             errMsg = "";
                             int cnt = 0;
@@ -276,8 +276,8 @@ namespace FT_ADDON.AYS
                             }
                             else if (cnt >= 1)
                             {
-                                if (ObjectFunctions.Approval(oForm.TypeEx))
-                                {
+                                //if (ObjectFunctions.Approval(oForm.TypeEx))
+                                //{
                                     if (oForm.DataSources.DBDataSources.Item("@" + ds).GetValue("U_RELEASE", 0) == "Y")
                                     {
                                         oForm.DataSources.DBDataSources.Item("@" + ds).SetValue("U_RELEASE", 0, "N");
@@ -286,11 +286,11 @@ namespace FT_ADDON.AYS
                                         BubbleEvent = false;
                                         break;
                                     }
-                                    oForm.DataSources.DBDataSources.Item("@" + ds).SetValue("U_APP", 0, "W");
-                                    oForm.DataSources.DBDataSources.Item("@" + ds).SetValue("U_APPBY", 0, SAP.SBOCompany.UserName);
-                                    oForm.DataSources.DBDataSources.Item("@" + ds).SetValue("U_APPDATE", 0, DateTime.Today.ToString("yyyyMMdd"));
-                                    oForm.DataSources.DBDataSources.Item("@" + ds).SetValue("U_APPTIME", 0, DateTime.Now.ToString("HHmm"));
-                                }
+                                    //oForm.DataSources.DBDataSources.Item("@" + ds).SetValue("U_APP", 0, "W");
+                                    //oForm.DataSources.DBDataSources.Item("@" + ds).SetValue("U_APPBY", 0, SAP.SBOCompany.UserName);
+                                    //oForm.DataSources.DBDataSources.Item("@" + ds).SetValue("U_APPDATE", 0, DateTime.Today.ToString("yyyyMMdd"));
+                                    //oForm.DataSources.DBDataSources.Item("@" + ds).SetValue("U_APPTIME", 0, DateTime.Now.ToString("HHmm"));
+                                //}
                             }
                         }
                         //BubbleEvent = false;
