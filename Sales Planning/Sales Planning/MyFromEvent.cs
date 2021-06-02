@@ -19,26 +19,38 @@ namespace FT_ADDON.AYS
                     {
                         string formtype = oForm.TypeEx;
                         string cardcode = "";
-                        try
-                        {
-                            if (formtype == "FT_SPLAN" || formtype == "FT_TPPLAN")
-                                cardcode = oForm.DataSources.DBDataSources.Item(0).GetValue("U_CardCode", 0);
-                            else if (formtype == "1250000100" || formtype == "139" || formtype == "149")
-                                cardcode = oForm.DataSources.DBDataSources.Item(0).GetValue("CardCode", 0);
+                        string docnum = "";
 
+                        if (formtype == "FT_SPLAN" || formtype == "FT_TPPLAN")
+                        {
+                            cardcode = oForm.DataSources.DBDataSources.Item("@" + formtype).GetValue("U_CardCode", 0);
+                            if (formtype == "FT_SPLAN") docnum = oForm.DataSources.DBDataSources.Item("@" + formtype + "1").GetValue("U_SODOCNUM", 0);
+                            if (formtype == "FT_TPPLAN") docnum = oForm.DataSources.DBDataSources.Item("@" + formtype + "1").GetValue("U_SPNO", 0);
                         }
-                        catch
-                        { }
-                        if (cardcode != null)
+                        else if (formtype == "1250000100" || formtype == "139" || formtype == "149")
+                        {
+                            cardcode = oForm.DataSources.DBDataSources.Item(0).GetValue("CardCode", 0);
+                        }
+                        else
+                        {
+                            return;
+                        }
+
+                        if (cardcode != null && cardcode.Trim() != "")
                         {
                             SAPbouiCOM.Item oItem = null;
                             SAPbouiCOM.ComboBox oComboapp = null;
                             SAPbouiCOM.EditText oEdit = null;
 
+                            int cnt = 0;
+                            int temp = 0;
                             string NotifyV = "";
                             string errMsg = "";
+
+                            #region Overdue
                             string sql = "Select U_NotifyV from [@FT_SPODCTRL] where Code='" + formtype + "'";
                             SAPbobsCOM.Recordset query = SAP.SBOCompany.GetBusinessObject(SAPbobsCOM.BoObjectTypes.BoRecordset) as SAPbobsCOM.Recordset;
+                            SAPbobsCOM.Recordset rs = SAP.SBOCompany.GetBusinessObject(SAPbobsCOM.BoObjectTypes.BoRecordset) as SAPbobsCOM.Recordset;
                             query.DoQuery(sql);
                             if (query.RecordCount > 0)
                             {
@@ -46,36 +58,57 @@ namespace FT_ADDON.AYS
                                 NotifyV = query.Fields.Item(0).Value.ToString();
                                 if (NotifyV != "NA")
                                 {
-                                    if (ft_Functions.CheckCreditTerm(oForm, oForm.DataSources.DBDataSources.Item(0), oForm.DataSources.DBDataSources.Item(1), ref errMsg))
+                                    if (formtype == "FT_SPLAN" || formtype == "FT_TPPLAN")
+                                        cnt = ft_Functions.CheckCreditTerm(oForm, oForm.DataSources.DBDataSources.Item("@" + formtype), oForm.DataSources.DBDataSources.Item("@" + formtype + 1), ref errMsg);
+                                    else
+                                        cnt = ft_Functions.CheckCreditTerm(oForm, oForm.DataSources.DBDataSources.Item(0), oForm.DataSources.DBDataSources.Item(1), ref errMsg);
+                                    if (cnt == -1)
                                     {
-                                        if (formtype == "139")
+                                        BubbleEvent = false;
+                                        SAP.SBOApplication.MessageBox("Overdue SP Error");
+                                    }
+                                    else if (cnt > 0)
+                                    {
+                                        if (formtype == "139" || formtype == "149")
                                         {
                                             oEdit = (SAPbouiCOM.EditText)oForm.Items.Item("U_CTERM").Specific;
                                             oEdit.String = "Y";
                                         }
                                         if (NotifyV == "MSG_BLOCK")
                                         {
+                                            temp = ft_Functions.CheckSPNeeded("OD", formtype, docnum);
+                                            if (temp == -1)
+                                            {
+                                                BubbleEvent = false;
+                                                return;
+                                            }
                                             if (formtype == "FT_SPLAN" || formtype == "FT_TPPLAN")
                                             {
-                                                oForm.DataSources.DBDataSources.Item("@" + formtype).SetValue("U_APP", 0, "W");
-                                                //oForm.DataSources.DBDataSources.Item("@" + formtype).SetValue("U_APPBY", 0, SAP.SBOCompany.UserName);
-                                                //oForm.DataSources.DBDataSources.Item("@" + formtype).SetValue("U_APPDATE", 0, DateTime.Today.ToString("yyyyMMdd"));
-                                                //oForm.DataSources.DBDataSources.Item("@" + formtype).SetValue("U_APPTIME", 0, DateTime.Now.ToString("HHmm"));
+                                                if (temp > 0)
+                                                {
+                                                    oForm.DataSources.DBDataSources.Item("@" + formtype).SetValue("U_APP", 0, "W");
+                                                    //oForm.DataSources.DBDataSources.Item("@" + formtype).SetValue("U_APPBY", 0, SAP.SBOCompany.UserName);
+                                                    //oForm.DataSources.DBDataSources.Item("@" + formtype).SetValue("U_APPDATE", 0, DateTime.Today.ToString("yyyyMMdd"));
+                                                    //oForm.DataSources.DBDataSources.Item("@" + formtype).SetValue("U_APPTIME", 0, DateTime.Now.ToString("HHmm"));
+                                                }
                                             }
-                                            else if (formtype == "139")
+                                            else if (formtype == "139" || formtype == "149")
                                             {
-                                                oForm.DataSources.DBDataSources.Item("ORDR").SetValue("U_APP", 0, "W");
+                                                oItem = oForm.Items.Item("U_APP");
+                                                oComboapp = (SAPbouiCOM.ComboBox)oItem.Specific;
+                                                oComboapp.Select("W", SAPbouiCOM.BoSearchKey.psk_ByValue);
                                             }
-                                            SAP.SBOApplication.MessageBox("There is/are invoices overdue for this customer", 1, "Ok", "", "");
                                         }
+                                        SAP.SBOApplication.MessageBox("There is/are invoices overdue for this customer", 1, "Ok", "", "");
 
                                     }
+
                                 }
                             }
-
+                            #endregion
+                            #region credit limit
                             string limitType = "";
                             double different = 0, c_usage = 0, t_limit = 0, c_limit = 0;
-                            int cnt = 0;
                             sql = "Select U_NotifyV from [@FT_SPCLCTRL] where Code='" + formtype + "'";
                             query = SAP.SBOCompany.GetBusinessObject(SAPbobsCOM.BoObjectTypes.BoRecordset) as SAPbobsCOM.Recordset;
                             query.DoQuery(sql);
@@ -85,41 +118,58 @@ namespace FT_ADDON.AYS
                                 NotifyV = query.Fields.Item(0).Value.ToString();
                                 if (NotifyV != "NA")
                                 {
-                                    cnt = ft_Functions.CheckCreditLimit(oForm, oForm.DataSources.DBDataSources.Item(0), oForm.DataSources.DBDataSources.Item(1), ref errMsg, ref limitType, ref different, ref c_usage, ref t_limit, ref c_limit);
-                                    if (cnt > 0)
+                                    if (formtype == "FT_SPLAN" || formtype == "FT_TPPLAN")
+                                        cnt = ft_Functions.CheckCreditLimit(oForm, oForm.DataSources.DBDataSources.Item("@" + formtype), oForm.DataSources.DBDataSources.Item("@" + formtype + "1"), ref errMsg, ref limitType, ref different, ref c_usage, ref t_limit, ref c_limit);
+                                    else
+                                        cnt = ft_Functions.CheckCreditLimit(oForm, oForm.DataSources.DBDataSources.Item(0), oForm.DataSources.DBDataSources.Item(1), ref errMsg, ref limitType, ref different, ref c_usage, ref t_limit, ref c_limit);
+                                    if (cnt == -1)
                                     {
-                                        if (formtype == "139")
+                                        BubbleEvent = false;
+                                        SAP.SBOApplication.MessageBox("Credit Limit SP Error");
+                                    }
+                                    else if (cnt > 0)
+                                    {
+                                        if (formtype == "139" || formtype == "149")
                                         {
                                             oItem = oForm.Items.Item("U_CUsage");
                                             oEdit = (SAPbouiCOM.EditText)oItem.Specific;
-                                            oEdit.DataBind.SetBound(true, "ORDR", "U_CUsage");
                                             oEdit.Value = c_usage.ToString();
 
                                             oItem = oForm.Items.Item("U_TLimit");
                                             oEdit = (SAPbouiCOM.EditText)oItem.Specific;
-                                            oEdit.DataBind.SetBound(true, "ORDR", "U_TLimit");
                                             oEdit.Value = t_limit.ToString();
 
                                             oItem = oForm.Items.Item("U_CLimit");
                                             oEdit = (SAPbouiCOM.EditText)oItem.Specific;
-                                            oEdit.DataBind.SetBound(true, "ORDR", "U_CLimit");
                                             oEdit.Value = c_limit.ToString();
                                         }
                                         if (NotifyV == "MSG_BLOCK")
                                         {
+                                            temp = ft_Functions.CheckSPNeeded("CL", formtype, docnum);
+                                            if (temp == -1)
+                                            {
+                                                BubbleEvent = false;
+                                                return;
+                                            }
                                             if (formtype == "FT_SPLAN" || formtype == "FT_TPPLAN")
                                             {
-                                                oForm.DataSources.DBDataSources.Item("@" + formtype).SetValue("U_APP", 0, "W");
-                                                //oForm.DataSources.DBDataSources.Item("@" + formtype).SetValue("U_APPBY", 0, SAP.SBOCompany.UserName);
-                                                //oForm.DataSources.DBDataSources.Item("@" + formtype).SetValue("U_APPDATE", 0, DateTime.Today.ToString("yyyyMMdd"));
-                                                //oForm.DataSources.DBDataSources.Item("@" + formtype).SetValue("U_APPTIME", 0, DateTime.Now.ToString("HHmm"));
-                                            }
-                                            else if (formtype == "139")
-                                            {
-                                                oItem = oForm.Items.Item("U_APP");
-                                                oComboapp = (SAPbouiCOM.ComboBox)oItem.Specific;
-                                                oComboapp.Select("W", SAPbouiCOM.BoSearchKey.psk_ByValue);
+                                                if (temp > 0)
+                                                {
 
+                                                    oForm.DataSources.DBDataSources.Item("@" + formtype).SetValue("U_APP", 0, "W");
+                                                    //oForm.DataSources.DBDataSources.Item("@" + formtype).SetValue("U_APPBY", 0, SAP.SBOCompany.UserName);
+                                                    //oForm.DataSources.DBDataSources.Item("@" + formtype).SetValue("U_APPDATE", 0, DateTime.Today.ToString("yyyyMMdd"));
+                                                    //oForm.DataSources.DBDataSources.Item("@" + formtype).SetValue("U_APPTIME", 0, DateTime.Now.ToString("HHmm"));
+                                                }
+                                            }
+                                            else if (formtype == "139" || formtype == "149")
+                                            {
+                                                if (temp > 0)
+                                                {
+                                                    oItem = oForm.Items.Item("U_APP");
+                                                    oComboapp = (SAPbouiCOM.ComboBox)oItem.Specific;
+                                                    oComboapp.Select("W", SAPbouiCOM.BoSearchKey.psk_ByValue);
+                                                }
                                             }
 
                                         }
@@ -127,14 +177,10 @@ namespace FT_ADDON.AYS
                                         SAP.SBOApplication.MessageBox("Credit Limit Exceeded " + Environment.NewLine + "Limit Type - " +
                                             limitType + Environment.NewLine + " Over Limit Amount - RM " + different.ToString("#,###,###,###.00"), 1, "Ok", "", "");
                                     }
-                                    else if (cnt == -1)
-                                    {
-                                        BubbleEvent = false;
-                                        SAP.SBOApplication.MessageBox("Credit Limit SP Error");
-                                    }
+
                                 }
                             }
-
+                            #endregion
                         }
 
                     }
@@ -142,7 +188,7 @@ namespace FT_ADDON.AYS
             }
             catch (Exception ex)
             {
-                SAP.SBOApplication.MessageBox("Data Event Before " + ex.Message, 1, "Ok", "", "");
+                SAP.SBOApplication.MessageBox("Item Event Before " + ex.Message, 1, "Ok", "", "");
                 BubbleEvent = false;
             }
         }

@@ -283,11 +283,11 @@ namespace FT_ADDON.AYS
 
                                     oRC.DoQuery(sql);
 
-                                    if (sptype == "FT_TPPLAN")
-                                    {
-                                        oRC.DoQuery("Exec FT_Update_Approval '" + table + "', " + docentry + ", '" + sptype + "', '" + app + "'");
-
-                                    }
+                                    oRC.DoQuery("Exec FT_AfterAPP '" + table + "', " + docentry + ", '" + app + "'");
+                                    //if (sptype == "FT_TPPLAN")
+                                    //{
+                                    //    oRC.DoQuery("Exec FT_Update_Approval '" + table + "', " + docentry + ", '" + sptype + "', '" + app + "'");
+                                    //}
 
                                     sendAppMsg(objecttype, "U", docentry, oForm.Title + " " + docnum, status, oForm.Title.Replace("Approval", "") + docnum);
 
@@ -365,6 +365,7 @@ namespace FT_ADDON.AYS
 
                         if (sysobj != "Y")
                         {
+                            /*
                             SAPbouiCOM.DataTable oDataTable = oForm.DataSources.DataTables.Item("cfl");
                             SAPbouiCOM.Grid oGrid = (SAPbouiCOM.Grid)oForm.Items.Item(pVal.ItemUID).Specific;
                             oGrid.Rows.SelectedRows.Add(pVal.Row);
@@ -423,10 +424,11 @@ namespace FT_ADDON.AYS
                                 UserForm_SalesPlanning.checkrow(oNewForm);
                                 oNewForm.Mode = SAPbouiCOM.BoFormMode.fm_OK_MODE;
                             }
-
+                            */
                         }
                         else
                         {
+                            /*
                             SAPbouiCOM.DataTable oDataTable = oForm.DataSources.DataTables.Item("cfl");
                             SAPbouiCOM.Grid oGrid = (SAPbouiCOM.Grid)oForm.Items.Item(pVal.ItemUID).Specific;
                             oGrid.Rows.SelectedRows.Add(pVal.Row);
@@ -486,7 +488,7 @@ namespace FT_ADDON.AYS
                                 UserForm_SalesPlanning.checkrow(oNewForm);
                                 oNewForm.Mode = SAPbouiCOM.BoFormMode.fm_OK_MODE;
                             }
-
+                            */
                         }
                         break;
                     case SAPbouiCOM.BoEventTypes.et_COMBO_SELECT:
@@ -549,7 +551,8 @@ namespace FT_ADDON.AYS
             }
             catch (Exception ex)
             {
-                SAP.SBOApplication.MessageBox("Item Event After " + ex.Message, 1, "Ok", "", "");
+                //SAP.SBOApplication.MessageBox("Item Event After " + ex.Message, 1, "Ok", "", "");
+                SAP.SBOApplication.MessageBox($"Item Event After {ex.Source} {ex.StackTrace} {System.Environment.NewLine} {ex.Message}", 1, "Ok", "", "");
             }
         }
 

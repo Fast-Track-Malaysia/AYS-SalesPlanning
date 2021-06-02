@@ -25,6 +25,10 @@ namespace FT_ADDON.AYS
                 //case "TPAPPLIST":
                 //    InitForm.approval(pVal.MenuUID, "002", "17", "ORDR", "RDR1", "Sales Order (TP) Approval", true, "FT_TPPLAN");
                 //    break;
+                case "SQAPPLIST":
+                    InitForm.approval(pVal.MenuUID, "005", "23", "OQUT", "QUT1", "Sales Quotation Approval", true, "");
+                    //InitForm.approval(pVal.MenuUID, "001", "112", "ODRF", "DRF1", "Draft Sales Order Approval", true, "");
+                    break;
                 case "SOAPPLIST":
                     InitForm.approval(pVal.MenuUID, "002", "17", "ORDR", "RDR1", "Sales Order Approval", true, "");
                     //InitForm.approval(pVal.MenuUID, "001", "112", "ODRF", "DRF1", "Draft Sales Order Approval", true, "");

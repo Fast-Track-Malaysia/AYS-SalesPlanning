@@ -228,7 +228,7 @@ namespace FT_ADDON.AYS
                 {
                     case SAPbouiCOM.BoEventTypes.et_FORM_DATA_ADD:
                         break; // 20210531
-
+                        /*
                         SAPbouiCOM.DBDataSource ods = oForm.DataSources.DBDataSources.Item("ORDR");
                         SAPbouiCOM.DBDataSource ods1 = oForm.DataSources.DBDataSources.Item("RDR1");
 
@@ -360,7 +360,7 @@ namespace FT_ADDON.AYS
                             oEdit = null;
                         }
                         //BubbleEvent = false;
-
+                        */
 
                 break;
                 }

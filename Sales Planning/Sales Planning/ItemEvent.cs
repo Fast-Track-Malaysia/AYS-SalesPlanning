@@ -28,11 +28,10 @@ namespace FT_ADDON.AYS
                         case "60091":
                             Sysform_ARReservedInvoice.processItemEventbefore(oForm, ref pVal, ref BubbleEvent);
                             break;
-                        case "TPAPPLIST":
+                        case "SQAPPLIST":
                         case "SOAPPLIST":
-                        case "CMAPPLIST2":
-                        case "TPAPPLIST2":
-                        case "SPAPPLIST2":
+                        case "SPAPPLIST":
+                        case "TPAPPLIST":
                             UserForm_Approval.processItemEventbefore(oForm, ref pVal, ref BubbleEvent);
                             break;
                         case "FT_SPLAN":
@@ -71,6 +70,9 @@ namespace FT_ADDON.AYS
                         //    break;
                         case "139":
                             Sysform_SalesOrder.processItemEventbefore(oForm, ref pVal, ref BubbleEvent);
+                            break;
+                        case "149":
+                            Sysform_SalesQuotation.processItemEventbefore(oForm, ref pVal, ref BubbleEvent);
                             break;
                         //case "140":
                         //    Sysform_SalesDelivery.processItemEventbefore(oForm, ref pVal, ref BubbleEvent);
@@ -123,11 +125,10 @@ namespace FT_ADDON.AYS
                     case "FT_GENSPERR":
                         UserForm_FT_GENSPERR.processItemEventafter(oForm, ref pVal);
                         break;
-                    case "TPAPPLIST":
+                    case "SQAPPLIST":
                     case "SOAPPLIST":
-                    case "CMAPPLIST2":
-                    case "TPAPPLIST2":
-                    case "SPAPPLIST2":
+                    case "SPAPPLIST":
+                    case "TPAPPLIST":
                         UserForm_Approval.processItemEventafter(oForm, ref pVal);
                         break;
                     case "FT_SPLAN":
@@ -300,8 +301,10 @@ namespace FT_ADDON.AYS
                 BubbleEvent = true;
                 switch (BusinessObjectInfo.FormTypeEx)
                 {
-                    case "TPAPPLIST":
+                    case "SQAPPLIST":
                     case "SOAPPLIST":
+                    case "SPAPPLIST":
+                    case "TPAPPLIST":
                         UserForm_Approval.processDataEventbefore(oForm, ref BusinessObjectInfo, ref BubbleEvent);
                         break;
                     case "FT_SPLAN":
@@ -330,8 +333,10 @@ namespace FT_ADDON.AYS
                     //case "50103":
                     //    Sysform_Approval50103.processDataEventafter(oForm, ref BusinessObjectInfo);
                     //    break;
-                    case "TPAPPLIST":
+                    case "SQAPPLIST":
                     case "SOAPPLIST":
+                    case "SPAPPLIST":
+                    case "TPAPPLIST":
                         UserForm_Approval.processDataEventafter(oForm, ref BusinessObjectInfo);
                         break;
                     case "FT_SPLAN":

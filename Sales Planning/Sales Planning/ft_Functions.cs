@@ -7,8 +7,43 @@ namespace FT_ADDON.AYS
     public class ft_Functions
     {
         public ft_Functions() { }
-        public static bool CheckCreditTerm(SAPbouiCOM.Form oForm, SAPbouiCOM.DBDataSource ods, SAPbouiCOM.DBDataSource ods1, ref string errMsg)
+
+        public static int CheckSPNeeded(string type, string formtype, string docnum)
         {
+            //return -1 if error
+            //return 0 if not found
+            //return > 0 if found
+
+            try
+            {
+                SAPbobsCOM.Recordset rs = (SAPbobsCOM.Recordset)SAP.SBOCompany.GetBusinessObject(SAPbobsCOM.BoObjectTypes.BoRecordset);
+                rs.DoQuery($"Exec FT_CheckSPAppNeeded '{type}', '{formtype}', '{docnum}'");
+                if (rs.RecordCount <= 0)
+                {
+                    if (SAP.SBOCompany.InTransaction) SAP.SBOCompany.EndTransaction(SAPbobsCOM.BoWfTransOpt.wf_RollBack);
+                    SAP.SBOApplication.MessageBox($"{type} {formtype} {docnum} FT_CheckCreditTerm error.", 1, "Ok", "", "");
+                    return -1;
+                }
+                else
+                {
+                    if (rs.Fields.Item(0).Value.ToString() != "0")
+                        return 1;
+                }
+                return 0;
+            }
+            catch (Exception ex)
+            {
+                SAP.SBOApplication.MessageBox("CheckCreditTerm " + ex.Message, 1, "Ok", "", "");
+                return -1;
+            }
+        }
+
+        public static int CheckCreditTerm(SAPbouiCOM.Form oForm, SAPbouiCOM.DBDataSource ods, SAPbouiCOM.DBDataSource ods1, ref string errMsg)
+        {
+            //return -1 if error
+            //return 0 if not found
+            //return > 0 if found
+
             try
             {
                 SAPbobsCOM.Recordset rs = (SAPbobsCOM.Recordset)SAP.SBOCompany.GetBusinessObject(SAPbobsCOM.BoObjectTypes.BoRecordset);
@@ -30,15 +65,25 @@ namespace FT_ADDON.AYS
                 }
 
                 date = DateTime.Parse(yyyy + "-" + MM + "-" + dd);
-                rs.DoQuery("select T0.* from oinv T0 inner join OCRD T1 on T0.cardcode = T1.cardcode where T0.cardcode='" + cardcode + "' and docstatus='O' and dateadd(day,isnull(T0.U_Grace,0),DATEADD (dd, -1, DATEADD(mm, DATEDIFF(mm, 0, docduedate) + 1, 0))) <= '" + date.ToString("yyyy-MM-dd") + "' ");
-                //dateadd(day,isnull(T1.U_Grace,0),docduedate) <= '" + date.ToString("yyyy-MM-dd") + "' ");
-                if (rs.RecordCount > 0) return true;
-                return false;
+                //rs.DoQuery("select T0.* from oinv T0 inner join OCRD T1 on T0.cardcode = T1.cardcode where T0.cardcode='" + cardcode + "' and docstatus='O' and dateadd(day,isnull(T0.U_Grace,0),DATEADD (dd, -1, DATEADD(mm, DATEDIFF(mm, 0, docduedate) + 1, 0))) <= '" + date.ToString("yyyy-MM-dd") + "' ");
+                rs.DoQuery($"exec FT_CheckCreditTerm '{cardcode}', '{date.ToString("yyyy-MM-dd")}'");
+                if (rs.RecordCount <= 0)
+                {
+                    if (SAP.SBOCompany.InTransaction) SAP.SBOCompany.EndTransaction(SAPbobsCOM.BoWfTransOpt.wf_RollBack);
+                    SAP.SBOApplication.MessageBox($"{cardcode} {date.ToString("yyyy-MM-dd")} FT_CheckCreditTerm error.", 1, "Ok", "", "");
+                    return -1;
+                }
+                else
+                {
+                    if (rs.Fields.Item(0).Value.ToString() != "0")
+                        return 1;
+                }
+                return 0;
             }
             catch (Exception ex)
             {
                 SAP.SBOApplication.MessageBox("CheckCreditTerm " + ex.Message, 1, "Ok", "", "");
-                return false;
+                return -1;
             }
         }
 
@@ -93,7 +138,7 @@ namespace FT_ADDON.AYS
                     if (rs.RecordCount <= 0)
                     {
                         if (SAP.SBOCompany.InTransaction) SAP.SBOCompany.EndTransaction(SAPbobsCOM.BoWfTransOpt.wf_RollBack);
-                        SAP.SBOApplication.MessageBox("CheckCreditLimit error." + MasterDBName + "..FT_CheckCreditLimit", 1, "Ok", "", "");
+                        SAP.SBOApplication.MessageBox($"CheckCreditLimit error {cardcode}. {MasterDBName}..FT_CheckCreditLimit", 1, "Ok", "", "");
                         return -1;
                     }
                     else
@@ -109,99 +154,6 @@ namespace FT_ADDON.AYS
                         }
                     }
                     return 0;
-                    // ykw 20180417
-
-                    rs.DoQuery("select * from " + MasterDBName + ".dbo.ocrd where cardcode='" + cardcode + "'");
-                    newCardCode = rs.Fields.Item("U_GroupIndicator").Value.ToString();
-
-                    rs.DoQuery("select * from  " + MasterDBName + ".dbo.[@CUST_TMP_CRED_LIMIT] " +
-                        " where U_CUST = '" + newCardCode + "' and   U_DB='" + SAP.SBOCompany.CompanyDB + "' and '" + date.ToString("yyyy-MM-dd") + "' >= U_SDATE and  '" + date.ToString("yyyy-MM-dd") + "' <= U_EDATE ");
-
-                    // Get Temporary Credit Limit
-                    if (rs.RecordCount > 0)
-                    {
-                        limit = double.Parse(rs.Fields.Item("U_CLIMIT").Value.ToString());
-                        temporaryLimit = limit;
-                    }
-
-                    //Get Group / Individual Credit Limit
-                    rs.DoQuery("select * from  " + MasterDBName + ".dbo.[@GRP_CUST_CRED_LIMIT] where U_CUST = '" + newCardCode + "' ");
-                    if (rs.RecordCount > 0)
-                    {
-                        limit += double.Parse(rs.Fields.Item("U_CLIMIT").Value.ToString());
-                        customerLimit = double.Parse(rs.Fields.Item("U_CLIMIT").Value.ToString());
-                        limitType = "Group";
-                    }
-                    else
-                    {
-                        rs.DoQuery("select * from  " + MasterDBName + ".dbo.[@IND_CUST_CRED_LIMIT] where U_CUST = '" + newCardCode + "' and U_DB='" + SAP.SBOCompany.CompanyDB + "'");
-                        if (rs.RecordCount > 0)
-                        {
-                            limit += double.Parse(rs.Fields.Item("U_CLIMIT").Value.ToString());
-                            customerLimit = double.Parse(rs.Fields.Item("U_CLIMIT").Value.ToString());
-                            limitType = "Individual";
-                        }
-                    }
-                    if (limitType == "Individual")
-                    {
-                        sql += " select sum(T0.DocTotal - T0.PaidToDate) as total from " + SAP.SBOCompany.CompanyDB + ".dbo.ordr T0 inner join ocrd T1 on T0.cardcode = T1.cardcode where T0.DocStatus = 'O' and T1.U_GroupIndicator='" + newCardCode + "' " +
-                                    " union all " +
-                                    " select sum(T0.DocTotal - T0.PaidToDate) as total from " + SAP.SBOCompany.CompanyDB + ".dbo.odln T0 inner join ocrd T1 on T0.cardcode = T1.cardcode where T0.DocStatus = 'O' and T1.U_GroupIndicator='" + newCardCode + "' " +
-                                    " union all " +
-                                    " select sum(T0.DocTotal - T0.PaidToDate) as total from " + SAP.SBOCompany.CompanyDB + ".dbo.oinv T0 inner join ocrd T1 on T0.cardcode = T1.cardcode where T0.DocStatus = 'O' and T1.U_GroupIndicator='" + newCardCode + "' " +
-                                    " union all " +
-                                    " select -sum(T0.DocTotal - T0.PaidToDate) as total from " + SAP.SBOCompany.CompanyDB + ".dbo.orin T0 inner join ocrd T1 on T0.cardcode = T1.cardcode where T0.DocStatus = 'O' and T1.U_GroupIndicator='" + newCardCode + "' ";
-
-                    }
-                    else
-                    {
-                        // Get Current Total Due
-                        rs.DoQuery("select * from " + MasterDBName + ".dbo.[@FT_CHILDDB]");
-                        if (rs.RecordCount > 0)
-                        {
-                            while (!rs.EoF)
-                            {
-                                if (cnt > 0)
-                                {
-                                    sql += " union all ";
-                                }
-                                sql += " select sum(T0.DocTotal - T0.PaidToDate) as total from " + rs.Fields.Item("U_DBName").Value.ToString() + ".dbo.ordr T0 inner join ocrd T1 on T0.cardcode = T1.cardcode where T0.DocStatus = 'O' and T1.U_GroupIndicator='" + newCardCode + "' " +
-                                    " union all " +
-                                    " select sum(T0.DocTotal - T0.PaidToDate) as total from " + rs.Fields.Item("U_DBName").Value.ToString() + ".dbo.odln T0 inner join ocrd T1 on T0.cardcode = T1.cardcode where T0.DocStatus = 'O' and T1.U_GroupIndicator='" + newCardCode + "' " +
-                                    " union all " +
-                                    " select sum(T0.DocTotal - T0.PaidToDate) as total from " + rs.Fields.Item("U_DBName").Value.ToString() + ".dbo.oinv T0 inner join ocrd T1 on T0.cardcode = T1.cardcode where T0.DocStatus = 'O' and T1.U_GroupIndicator='" + newCardCode + "' " +
-                                    " union all " +
-                                    " select -sum(T0.DocTotal - T0.PaidToDate) as total from " + rs.Fields.Item("U_DBName").Value.ToString() + ".dbo.orin T0 inner join ocrd T1 on T0.cardcode = T1.cardcode where T0.DocStatus = 'O' and T1.U_GroupIndicator='" + newCardCode + "' ";
-
-                                cnt++;
-                                rs.MoveNext();
-                            }
-                            //sql = "select sum(total) as [total] from (" + sql + " ) T0";
-                            //rs.DoQuery(sql);
-                            //if (rs.RecordCount > 0)
-                            //{
-                            //    totalDue = double.Parse(rs.Fields.Item("total").Value.ToString());
-                            //}
-                        }
-                    }
-                    sql = "select sum(total) as [total] from (" + sql + " ) T0";
-                    rs.DoQuery(sql);
-                    if (rs.RecordCount > 0)
-                    {
-                        totalDue = double.Parse(rs.Fields.Item("total").Value.ToString());
-                    }
-                    if (ods.TableName.ToString().ToUpper() == "OQUT" || ods.TableName.Contains("@"))
-                    {
-                        currentUsage = totalDue;
-                    }
-                    else
-                    {
-                        currentUsage = totalDue + doctotal;
-                    }
-                    different = currentUsage - limit;
-                    if (limit > 0 && currentUsage > limit)
-                        return 1;
-
                 }
 
                 return 0;

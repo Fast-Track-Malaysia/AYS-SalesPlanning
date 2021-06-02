@@ -247,13 +247,33 @@ namespace FT_ADDON.AYS
                             ds1 = oForm.DataSources.UserDataSources.Item("dsname1").ValueEx;
                             ods = oForm.DataSources.DBDataSources.Item("@" + ds);
                             ods1 = oForm.DataSources.DBDataSources.Item("@" + ds1);
+                            bool appreq = false;
+                            if (oForm.DataSources.DBDataSources.Item("@" + ds).GetValue("U_APP", 0) == "N" ||
+                                    oForm.DataSources.DBDataSources.Item("@" + ds).GetValue("U_APP", 0) == "W")
+                            { appreq = true; }
+
+                            if (oForm.DataSources.DBDataSources.Item("@" + ds).GetValue("U_RELEASE", 0) == "Y" && appreq)
+                            {
+                                //oForm.DataSources.DBDataSources.Item("@" + ds).SetValue("U_RELEASE", 0, "N");
+                                SAP.SBOApplication.MessageBox("Cannot Release." + Environment.NewLine + "This document approval required.", 1, "Ok", "", "");
+                                //BubbleEvent = false;
+                            }
+
                             //SAPbobsCOM.Recordset rs = (SAPbobsCOM.Recordset)SAP.SBOCompany.GetBusinessObject(SAPbobsCOM.BoObjectTypes.BoRecordset);
                             //rs.DoQuery("select count(*) from [@FT_RAPPMSG] where U_objcode = '" + oForm.TypeEx + "'");
-                            if (ft_Functions.CheckCreditTerm(oForm, ods, ods1, ref errMsg))
+                            /*
+                            int cnt = 0;
+                            cnt = ft_Functions.CheckCreditTerm(oForm, ods, ods1, ref errMsg);
+                            if (cnt == -1)
+                            {
+                                BubbleEvent = false;
+                                break;
+                            }
+                            else if (cnt >= 1)
                             {
                                 //if (ObjectFunctions.Approval(oForm.TypeEx))
                                 //{
-                                    if (oForm.DataSources.DBDataSources.Item("@" + ds).GetValue("U_RELEASE", 0) == "Y")
+                                if (oForm.DataSources.DBDataSources.Item("@" + ds).GetValue("U_RELEASE", 0) == "Y")
                                     {
                                         oForm.DataSources.DBDataSources.Item("@" + ds).SetValue("U_RELEASE", 0, "N");
                                         SAP.SBOApplication.MessageBox("Cannot Release." + Environment.NewLine + "There is/are invoices overdue for this customer", 1, "Ok", "", "");
@@ -267,7 +287,6 @@ namespace FT_ADDON.AYS
                                 //}
                             }
                             errMsg = "";
-                            int cnt = 0;
                             cnt = ft_Functions.CheckCreditLimit(oForm, ods, ods1, ref errMsg, ref limitType, ref different, ref c_usage, ref t_limit, ref c_limit);
                             if (cnt == -1)
                             {
@@ -292,6 +311,7 @@ namespace FT_ADDON.AYS
                                     //oForm.DataSources.DBDataSources.Item("@" + ds).SetValue("U_APPTIME", 0, DateTime.Now.ToString("HHmm"));
                                 //}
                             }
+                            */
                         }
                         //BubbleEvent = false;
                         break;
@@ -1357,8 +1377,7 @@ namespace FT_ADDON.AYS
 
                                 string dsname = oForm.DataSources.UserDataSources.Item("dsname").ValueEx;
                                 string status = oForm.DataSources.DBDataSources.Item("@" + dsname).GetValue("Status", 0).Trim();
-                                string release = oForm.DataSources.DBDataSources.Item("@" + dsname).GetValue("U_RELEASE", 0).Trim();
-                                if (status == "O" && release == "N")
+                                if (status == "O")
                                 {
                                     if (dsname == "FT_TPPLAN" || dsname == "FT_SPLAN")
                                     {
