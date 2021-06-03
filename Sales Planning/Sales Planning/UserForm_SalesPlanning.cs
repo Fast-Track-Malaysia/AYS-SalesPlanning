@@ -66,24 +66,23 @@ namespace FT_ADDON.AYS
                             case "Y":
                                 oForm.DataSources.UserDataSources.Item("docstatus").Value = "APPROVED";
                                 if (ods.GetValue("U_RELEASE", 0).ToUpper().Trim() == "Y")
-                                    oForm.DataSources.UserDataSources.Item("docstatus").Value = "RELEASED";
+                                    oForm.DataSources.UserDataSources.Item("docstatus").Value = "RELEASED-A";
                                 break;
                             case "N":
                                 oForm.DataSources.UserDataSources.Item("docstatus").Value = "REJECTED";
+                                if (ods.GetValue("U_RELEASE", 0).ToUpper().Trim() == "Y")
+                                    oForm.DataSources.UserDataSources.Item("docstatus").Value = "RELEASED-R";
                                 break;
                             case "W":
                                 oForm.DataSources.UserDataSources.Item("docstatus").Value = "PENDING";
+                                if (ods.GetValue("U_RELEASE", 0).ToUpper().Trim() == "Y")
+                                    oForm.DataSources.UserDataSources.Item("docstatus").Value = "RELEASED-P";
                                 break;
                         }
                     }
                     else
                     {
                         oForm.DataSources.UserDataSources.Item("docstatus").Value = "OPEN";
-                        if (dsname == "FT_SPLAN")
-                        {
-                            if (ods.GetValue("U_RELEASE", 0).ToUpper().Trim() == "Y")
-                                oForm.DataSources.UserDataSources.Item("docstatus").Value = "RELEASED";
-                        }
                     }
 
                 }
@@ -1387,13 +1386,13 @@ namespace FT_ADDON.AYS
                                         {
                                             string app = ods.GetValue("U_APP", 0);
                                             if (string.IsNullOrEmpty(app)) app = "O";
+                                            if (app == "N")
+                                            {
+                                                ods.SetValue("U_APP", 0, "W");
+                                            }
                                             if (app == "W")
                                             {
                                                 SAP.SBOApplication.MessageBox("Document is pending for approval.");
-                                            }
-                                            else if (app == "N")
-                                            {
-                                                SAP.SBOApplication.MessageBox("Document is rejected.");
                                             }
                                             else
                                             {
@@ -1520,8 +1519,9 @@ namespace FT_ADDON.AYS
                         {
                             string dsname = oForm.DataSources.UserDataSources.Item("dsname").Value.Trim();
                             string dsname1 = oForm.DataSources.UserDataSources.Item("dsname1").Value.Trim();
-                            //if (oForm.DataSources.DBDataSources.Item("@" + dsname).GetValue("Status", 0) == "O")
-                            if (oForm.DataSources.UserDataSources.Item("docstatus").ValueEx == "OPEN")
+                            if (oForm.DataSources.DBDataSources.Item("@" + dsname).GetValue("Status", 0) == "O"
+                                && oForm.DataSources.DBDataSources.Item("@" + dsname).GetValue("U_RELEASE", 0) == "N"
+                                && oForm.DataSources.DBDataSources.Item("@" + dsname).GetValue("U_APP", 0) != "W")
                             {
                                 ((SAPbouiCOM.Matrix)oForm.Items.Item("grid1").Specific).FlushToDataSource();
                                 SAPbouiCOM.ButtonCombo oButtonCombo = (SAPbouiCOM.ButtonCombo)oForm.Items.Item(pVal.ItemUID).Specific;
@@ -1531,7 +1531,7 @@ namespace FT_ADDON.AYS
                             }
                             else
                             {
-                                SAP.SBOApplication.SetStatusBarMessage("Document Status is not OPEN.", SAPbouiCOM.BoMessageTime.bmt_Medium, true);
+                                SAP.SBOApplication.SetStatusBarMessage("Document Status is not available for Copy From.", SAPbouiCOM.BoMessageTime.bmt_Medium, true);
                             }
 
                         }
@@ -1957,7 +1957,7 @@ namespace FT_ADDON.AYS
                     }
                     if (oForm.DataSources.DBDataSources.Item("@" + dsname).GetValue("Status", 0) != "O")
                     {
-                        FT_ADDON.SAP.SBOApplication.StatusBar.SetText("Only Status O allowed Cancel.", SAPbouiCOM.BoMessageTime.bmt_Short, SAPbouiCOM.BoStatusBarMessageType.smt_Error);
+                        FT_ADDON.SAP.SBOApplication.StatusBar.SetText("Only Status Open allowed Close.", SAPbouiCOM.BoMessageTime.bmt_Short, SAPbouiCOM.BoStatusBarMessageType.smt_Error);
                         BubbleEvent = false;
                         return;
                     }
@@ -2012,7 +2012,7 @@ namespace FT_ADDON.AYS
                     }
                     if (oForm.DataSources.DBDataSources.Item("@" + dsname).GetValue("Status", 0) != "O")
                     {
-                        FT_ADDON.SAP.SBOApplication.StatusBar.SetText("Only Status O allowed Cancel.", SAPbouiCOM.BoMessageTime.bmt_Short, SAPbouiCOM.BoStatusBarMessageType.smt_Error);
+                        FT_ADDON.SAP.SBOApplication.StatusBar.SetText("Only Status Open allowed Cancel.", SAPbouiCOM.BoMessageTime.bmt_Short, SAPbouiCOM.BoStatusBarMessageType.smt_Error);
                         BubbleEvent = false;
                         return;
                     }
@@ -2064,10 +2064,23 @@ namespace FT_ADDON.AYS
                 }
                 else if (pVal.MenuUID == "1299") // close row
                 {
+                    BubbleEvent = false;
                     bool deleterow = false;
-                    if (oForm.DataSources.UserDataSources.Item("DocStatus").ValueEx != "OPEN")
+                    if (oForm.DataSources.DBDataSources.Item("@" + dsname).GetValue("Status", 0) != "O")
                     {
                         FT_ADDON.SAP.SBOApplication.SetStatusBarMessage("Document Status is not OPEN.", SAPbouiCOM.BoMessageTime.bmt_Short, true);
+                        BubbleEvent = false;
+                        return;
+                    }
+                    if (oForm.DataSources.DBDataSources.Item("@" + dsname).GetValue("U_RELEASE", 0) == "Y")
+                    {
+                        FT_ADDON.SAP.SBOApplication.SetStatusBarMessage("Document is Released.", SAPbouiCOM.BoMessageTime.bmt_Short, true);
+                        BubbleEvent = false;
+                        return;
+                    }
+                    if (oForm.DataSources.DBDataSources.Item("@" + dsname).GetValue("U_APP", 0) == "W")
+                    {
+                        FT_ADDON.SAP.SBOApplication.SetStatusBarMessage("Document is pending for approval.", SAPbouiCOM.BoMessageTime.bmt_Short, true);
                         BubbleEvent = false;
                         return;
                     }
@@ -2110,16 +2123,27 @@ namespace FT_ADDON.AYS
                             }
                         }
                     }
-                    BubbleEvent = false;
 
                     if (oForm.Mode == SAPbouiCOM.BoFormMode.fm_OK_MODE && deleterow) oForm.Mode = SAPbouiCOM.BoFormMode.fm_UPDATE_MODE;
                 }
                 else if (pVal.MenuUID == "1312") // open row
                 {
                     bool deleterow = false;
-                    if (oForm.DataSources.UserDataSources.Item("DocStatus").ValueEx != "OPEN")
+                    if (oForm.DataSources.DBDataSources.Item("@" + dsname).GetValue("Status", 0) != "O")
                     {
                         FT_ADDON.SAP.SBOApplication.SetStatusBarMessage("Document Status is not OPEN.", SAPbouiCOM.BoMessageTime.bmt_Short, true);
+                        BubbleEvent = false;
+                        return;
+                    }
+                    if (oForm.DataSources.DBDataSources.Item("@" + dsname).GetValue("U_RELEASE", 0) == "Y")
+                    {
+                        FT_ADDON.SAP.SBOApplication.SetStatusBarMessage("Document is Released.", SAPbouiCOM.BoMessageTime.bmt_Short, true);
+                        BubbleEvent = false;
+                        return;
+                    }
+                    if (oForm.DataSources.DBDataSources.Item("@" + dsname).GetValue("U_APP", 0) == "W")
+                    {
+                        FT_ADDON.SAP.SBOApplication.SetStatusBarMessage("Document is pending for approval.", SAPbouiCOM.BoMessageTime.bmt_Short, true);
                         BubbleEvent = false;
                         return;
                     }
@@ -2171,9 +2195,21 @@ namespace FT_ADDON.AYS
                     bool deleterow = false;
                     //if (oForm.ActiveItem == "grid1")
                     {
-                        if (oForm.DataSources.UserDataSources.Item("DocStatus").ValueEx != "OPEN")
+                        if (oForm.DataSources.DBDataSources.Item("@" + dsname).GetValue("Status", 0) != "O")
                         {
                             FT_ADDON.SAP.SBOApplication.SetStatusBarMessage("Document Status is not OPEN.", SAPbouiCOM.BoMessageTime.bmt_Short, true);
+                            BubbleEvent = false;
+                            return;
+                        }
+                        if (oForm.DataSources.DBDataSources.Item("@" + dsname).GetValue("U_RELEASE", 0) == "Y")
+                        {
+                            FT_ADDON.SAP.SBOApplication.SetStatusBarMessage("Document is Released.", SAPbouiCOM.BoMessageTime.bmt_Short, true);
+                            BubbleEvent = false;
+                            return;
+                        }
+                        if (oForm.DataSources.DBDataSources.Item("@" + dsname).GetValue("U_APP", 0) == "W")
+                        {
+                            FT_ADDON.SAP.SBOApplication.SetStatusBarMessage("Document is pending for approval.", SAPbouiCOM.BoMessageTime.bmt_Short, true);
                             BubbleEvent = false;
                             return;
                         }
@@ -2267,12 +2303,7 @@ namespace FT_ADDON.AYS
                                 {
                                     if (oDS.GetValue("U_APP", 0) == "W")
                                     {
-                                        FT_ADDON.SAP.SBOApplication.StatusBar.SetText("Document is PENDING, Restore is not allowed.", SAPbouiCOM.BoMessageTime.bmt_Short, SAPbouiCOM.BoStatusBarMessageType.smt_Error);
-                                        BubbleEvent = false;
-                                    }
-                                    else if (oDS.GetValue("U_APP", 0) == "N")
-                                    {
-                                        FT_ADDON.SAP.SBOApplication.StatusBar.SetText("Document is REJECTED, Restore is not allowed.", SAPbouiCOM.BoMessageTime.bmt_Short, SAPbouiCOM.BoStatusBarMessageType.smt_Error);
+                                        FT_ADDON.SAP.SBOApplication.StatusBar.SetText("Document is pending For approval, Restore is not allowed.", SAPbouiCOM.BoMessageTime.bmt_Short, SAPbouiCOM.BoStatusBarMessageType.smt_Error);
                                         BubbleEvent = false;
                                     }
                                     else
