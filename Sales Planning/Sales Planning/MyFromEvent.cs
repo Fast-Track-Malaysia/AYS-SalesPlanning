@@ -12,24 +12,45 @@ namespace FT_ADDON.AYS
         {
             try
             {
+                string formtype = oForm.TypeEx;
+                string cardcode = "";
+                string docnum = "";
 
                 if (pVal.EventType == SAPbouiCOM.BoEventTypes.et_ITEM_PRESSED)
                 {
-                    if (pVal.ItemUID == "1" && oForm.Mode == SAPbouiCOM.BoFormMode.fm_ADD_MODE)
+                    if ((formtype == "1250000100" && pVal.ItemUID == "1250000001" && (oForm.Mode == SAPbouiCOM.BoFormMode.fm_ADD_MODE || oForm.Mode == SAPbouiCOM.BoFormMode.fm_UPDATE_MODE)) ||
+                        (pVal.ItemUID == "1" && oForm.Mode == SAPbouiCOM.BoFormMode.fm_ADD_MODE))
                     {
-                        string formtype = oForm.TypeEx;
-                        string cardcode = "";
-                        string docnum = "";
 
                         if (formtype == "FT_SPLAN" || formtype == "FT_TPPLAN")
                         {
                             cardcode = oForm.DataSources.DBDataSources.Item("@" + formtype).GetValue("U_CardCode", 0);
                             if (formtype == "FT_SPLAN") docnum = oForm.DataSources.DBDataSources.Item("@" + formtype + "1").GetValue("U_SODOCNUM", 0);
-                            if (formtype == "FT_TPPLAN") docnum = oForm.DataSources.DBDataSources.Item("@" + formtype + "1").GetValue("U_SPNO", 0);
+                            if (formtype == "FT_TPPLAN") docnum = oForm.DataSources.DBDataSources.Item("@" + formtype + "1").GetValue("U_SPDOCNUM", 0);
                         }
-                        else if (formtype == "1250000100" || formtype == "139" || formtype == "149")
+                        else if (formtype == "139" || formtype == "149")
                         {
                             cardcode = oForm.DataSources.DBDataSources.Item(0).GetValue("CardCode", 0);
+                        }
+                        else if (formtype == "1250000100")
+                        {
+                            cardcode = oForm.DataSources.DBDataSources.Item(0).GetValue("BpCode", 0);
+                            if (oForm.Mode == SAPbouiCOM.BoFormMode.fm_UPDATE_MODE)
+                            {
+                                if (oForm.DataSources.DBDataSources.Item(0).GetValue("Status", 0) == "A")
+                                {
+                                    SAPbobsCOM.Recordset rs = SAP.SBOCompany.GetBusinessObject(SAPbobsCOM.BoObjectTypes.BoRecordset) as SAPbobsCOM.Recordset;
+                                    string absid = oForm.DataSources.DBDataSources.Item(0).GetValue("AbsID", 0);
+                                    rs.DoQuery("select Status from OOAT where Status <> 'A' and AbsID = " + absid);
+                                    if (rs.RecordCount > 0)
+                                    { }
+                                    else
+                                        return;
+                                }
+                                else
+                                    return;
+
+                            }
                         }
                         else
                         {
@@ -48,6 +69,7 @@ namespace FT_ADDON.AYS
                             string errMsg = "";
 
                             #region Overdue
+                            string documentnum = "", documentdate = "", documentduedate = "";
                             string sql = "Select U_NotifyV from [@FT_SPODCTRL] where Code='" + formtype + "'";
                             SAPbobsCOM.Recordset query = SAP.SBOCompany.GetBusinessObject(SAPbobsCOM.BoObjectTypes.BoRecordset) as SAPbobsCOM.Recordset;
                             SAPbobsCOM.Recordset rs = SAP.SBOCompany.GetBusinessObject(SAPbobsCOM.BoObjectTypes.BoRecordset) as SAPbobsCOM.Recordset;
@@ -59,9 +81,9 @@ namespace FT_ADDON.AYS
                                 if (NotifyV != "NA")
                                 {
                                     if (formtype == "FT_SPLAN" || formtype == "FT_TPPLAN")
-                                        cnt = ft_Functions.CheckCreditTerm(oForm, oForm.DataSources.DBDataSources.Item("@" + formtype), oForm.DataSources.DBDataSources.Item("@" + formtype + 1), ref errMsg);
+                                        cnt = ft_Functions.CheckCreditTerm(oForm, oForm.DataSources.DBDataSources.Item("@" + formtype), oForm.DataSources.DBDataSources.Item("@" + formtype + 1), ref documentnum, ref documentdate, ref documentduedate, ref errMsg);
                                     else
-                                        cnt = ft_Functions.CheckCreditTerm(oForm, oForm.DataSources.DBDataSources.Item(0), oForm.DataSources.DBDataSources.Item(1), ref errMsg);
+                                        cnt = ft_Functions.CheckCreditTerm(oForm, oForm.DataSources.DBDataSources.Item(0), oForm.DataSources.DBDataSources.Item(1), ref documentnum, ref documentdate, ref documentduedate, ref errMsg);
                                     if (cnt == -1)
                                     {
                                         BubbleEvent = false;
@@ -99,7 +121,8 @@ namespace FT_ADDON.AYS
                                                 oComboapp.Select("W", SAPbouiCOM.BoSearchKey.psk_ByValue);
                                             }
                                         }
-                                        SAP.SBOApplication.MessageBox("There is/are invoices overdue for this customer", 1, "Ok", "", "");
+                                        SAP.SBOApplication.MessageBox($"Overdue invoices {Environment.NewLine}Oldest Invoice# {documentnum}{Environment.NewLine}Dated {documentdate}{Environment.NewLine}Due By {documentduedate}"
+                                            , 1, "Ok", "", "");
 
                                     }
 
@@ -173,9 +196,7 @@ namespace FT_ADDON.AYS
                                             }
 
                                         }
-
-                                        SAP.SBOApplication.MessageBox("Credit Limit Exceeded " + Environment.NewLine + "Limit Type - " +
-                                            limitType + Environment.NewLine + " Over Limit Amount - RM " + different.ToString("#,###,###,###.00"), 1, "Ok", "", "");
+                                        SAP.SBOApplication.MessageBox($"Credit Limit Exceeded {Environment.NewLine}Limit Type - {limitType}{Environment.NewLine}Total Credit Limit Use - RM {c_usage.ToString("#,###,###,###.00")}{Environment.NewLine}Credit Limit Amount - RM {c_limit.ToString("#,###,###,###.00")}{Environment.NewLine}Over Limit Amount - RM {different.ToString("#,###,###,###.00")}", 1, "Ok", "", "");
                                     }
 
                                 }
@@ -188,7 +209,8 @@ namespace FT_ADDON.AYS
             }
             catch (Exception ex)
             {
-                SAP.SBOApplication.MessageBox("Item Event Before " + ex.Message, 1, "Ok", "", "");
+
+                SAP.SBOApplication.MessageBox($"Item Event Before {ex.Message} {System.Environment.NewLine} {ex.StackTrace}", 1, "Ok", "", "");
                 BubbleEvent = false;
             }
         }

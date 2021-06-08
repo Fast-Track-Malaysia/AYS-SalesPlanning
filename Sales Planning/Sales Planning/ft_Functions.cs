@@ -38,7 +38,7 @@ namespace FT_ADDON.AYS
             }
         }
 
-        public static int CheckCreditTerm(SAPbouiCOM.Form oForm, SAPbouiCOM.DBDataSource ods, SAPbouiCOM.DBDataSource ods1, ref string errMsg)
+        public static int CheckCreditTerm(SAPbouiCOM.Form oForm, SAPbouiCOM.DBDataSource ods, SAPbouiCOM.DBDataSource ods1, ref string documentnum, ref string documentdate, ref string documentduedate, ref string errMsg)
         {
             //return -1 if error
             //return 0 if not found
@@ -55,6 +55,13 @@ namespace FT_ADDON.AYS
                     MM = ods.GetValue("U_docdate", 0).ToString().Substring(4, 2);
                     dd = ods.GetValue("U_docdate", 0).ToString().Substring(6, 2);
                     cardcode = ods.GetValue("U_cardcode", 0).ToString();
+                }
+                else if (oForm.TypeEx == "1250000100")
+                {
+                    yyyy = ods.GetValue("StartDate", 0).ToString().Substring(0, 4);
+                    MM = ods.GetValue("StartDate", 0).ToString().Substring(4, 2);
+                    dd = ods.GetValue("StartDate", 0).ToString().Substring(6, 2);
+                    cardcode = ods.GetValue("BpCode", 0).ToString();
                 }
                 else
                 {
@@ -76,7 +83,13 @@ namespace FT_ADDON.AYS
                 else
                 {
                     if (rs.Fields.Item(0).Value.ToString() != "0")
+                    {
+                        documentnum = rs.Fields.Item(1).Value.ToString();
+                        documentdate = rs.Fields.Item(2).Value.ToString();
+                        documentduedate = rs.Fields.Item(3).Value.ToString();
                         return 1;
+                    }
+
                 }
                 return 0;
             }
@@ -107,6 +120,30 @@ namespace FT_ADDON.AYS
                     dd = ods.GetValue("U_docdate", 0).ToString().Substring(6, 2);
                     cardcode = ods.GetValue("U_cardcode", 0).ToString();
                     doctotal = 0;
+                }
+                else if (oForm.TypeEx == "1250000100")
+                {
+                    decimal qty = 0;
+                    decimal price = 0;
+                    decimal total = 0;
+                    string temp = "";
+                    string[] tempa;
+                    SAPbouiCOM.Matrix grid = oForm.Items.Item("1250000045").Specific as SAPbouiCOM.Matrix;
+                    yyyy = ods.GetValue("StartDate", 0).ToString().Substring(0, 4);
+                    MM = ods.GetValue("StartDate", 0).ToString().Substring(4, 2);
+                    dd = ods.GetValue("StartDate", 0).ToString().Substring(6, 2);
+                    cardcode = ods.GetValue("BpCode", 0).ToString();
+                    for (int x = 1; x < grid.RowCount; x++)
+                    {
+                        temp = ((SAPbouiCOM.EditText)grid.Columns.Item("1250000007").Cells.Item(x).Specific).Value;
+                        decimal.TryParse(temp, out qty);
+                        temp = ((SAPbouiCOM.EditText)grid.Columns.Item("1250000009").Cells.Item(x).Specific).Value;
+                        tempa = temp.Split(' ');
+                        decimal.TryParse(tempa[tempa.Length - 1], out price);
+
+                        total += Math.Round(qty * price, 6, MidpointRounding.AwayFromZero);
+                    }
+                    doctotal = Convert.ToDouble(total);
                 }
                 else
                 {
