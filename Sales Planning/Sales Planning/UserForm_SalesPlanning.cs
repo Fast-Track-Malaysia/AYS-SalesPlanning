@@ -87,16 +87,18 @@ namespace FT_ADDON.AYS
 
                 }
                 string status = ods.GetValue("Status", 0).ToUpper().Trim();
-                string release = ods.GetValue("U_RELEASE", 0).ToUpper().Trim();
+                string release = "N";
                 ods = (SAPbouiCOM.DBDataSource)oForm.DataSources.DBDataSources.Item("@" + dsname1);
                 string comparecolumn = "";
                 switch (dsname)
                 {
                     case "FT_SPLAN":
                         comparecolumn = "U_TPQTY";
+                        release = ods.GetValue("U_RELEASE", 0).ToUpper().Trim();
                         break;
                     case "FT_TPPLAN":
                         comparecolumn = "U_CMQTY";
+                        release = ods.GetValue("U_RELEASE", 0).ToUpper().Trim();
                         break;
                 }
                 double comparevalue = 0;
@@ -1519,15 +1521,24 @@ namespace FT_ADDON.AYS
                         {
                             string dsname = oForm.DataSources.UserDataSources.Item("dsname").Value.Trim();
                             string dsname1 = oForm.DataSources.UserDataSources.Item("dsname1").Value.Trim();
-                            if (oForm.DataSources.DBDataSources.Item("@" + dsname).GetValue("Status", 0) == "O"
-                                && oForm.DataSources.DBDataSources.Item("@" + dsname).GetValue("U_RELEASE", 0) == "N"
-                                && oForm.DataSources.DBDataSources.Item("@" + dsname).GetValue("U_APP", 0) != "W")
+                            bool cancon = true;
+                            if (oForm.DataSources.DBDataSources.Item("@" + dsname).GetValue("Status", 0) != "O")
+                                cancon = false;
+
+                            if (dsname == "FT_TPPLAN" || dsname == "FT_SPLAN")
+                            {
+                                if (oForm.DataSources.DBDataSources.Item("@" + dsname).GetValue("U_RELEASE", 0) == "Y"
+                                    || oForm.DataSources.DBDataSources.Item("@" + dsname).GetValue("U_APP", 0) == "W")
+                                {
+                                    cancon = false;
+                                }
+                            }
+                            if (cancon)
                             {
                                 ((SAPbouiCOM.Matrix)oForm.Items.Item("grid1").Specific).FlushToDataSource();
                                 SAPbouiCOM.ButtonCombo oButtonCombo = (SAPbouiCOM.ButtonCombo)oForm.Items.Item(pVal.ItemUID).Specific;
                                 string code = oButtonCombo.Selected.Value.ToString();
                                 ObjectFunctions.CopyFromGrid1(oForm, oButtonCombo);
-
                             }
                             else
                             {
