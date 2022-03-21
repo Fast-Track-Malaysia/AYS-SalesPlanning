@@ -88,7 +88,6 @@ namespace FT_ADDON.AYS
                 }
                 string status = ods.GetValue("Status", 0).ToUpper().Trim();
                 string release = "N";
-                ods = (SAPbouiCOM.DBDataSource)oForm.DataSources.DBDataSources.Item("@" + dsname1);
                 string comparecolumn = "";
                 switch (dsname)
                 {
@@ -102,6 +101,7 @@ namespace FT_ADDON.AYS
                         break;
                 }
                 double comparevalue = 0;
+                ods = (SAPbouiCOM.DBDataSource)oForm.DataSources.DBDataSources.Item("@" + dsname1);
                 if (oMatrix.RowCount >= ods.Size)
                 {
 
@@ -338,9 +338,8 @@ namespace FT_ADDON.AYS
                 {
                     case SAPbouiCOM.BoEventTypes.et_FORM_DATA_UPDATE:
                         if (!BusinessObjectInfo.ActionSuccess) break;
-/*
                         string ds = oForm.DataSources.UserDataSources.Item("dsname").ValueEx;
-
+                        /*
                         docnum = oForm.DataSources.DBDataSources.Item("@" + ds).GetValue("DocNum", 0);
                         docentry = oForm.DataSources.DBDataSources.Item("@" + ds).GetValue("DocEntry", 0);
                         cardcode = oForm.DataSources.DBDataSources.Item("@" + ds).GetValue("U_CARDCODE", 0);
@@ -365,9 +364,9 @@ namespace FT_ADDON.AYS
                         {
                             sendMsg(ds, "U", docentry, oForm.Title + " " + docnum, "Document Updated of Customer[" + cardcode + "]", oForm.Title + " " + docnum);
                         }
-
+                        */
                         genDO(oForm, int.Parse(oForm.DataSources.DBDataSources.Item("@" + ds).GetValue("DocEntry", 0)));
-*/
+
                         break;
                     case SAPbouiCOM.BoEventTypes.et_FORM_DATA_ADD:
                         if (!BusinessObjectInfo.ActionSuccess) break;

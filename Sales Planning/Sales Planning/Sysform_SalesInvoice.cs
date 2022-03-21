@@ -160,8 +160,8 @@ namespace FT_ADDON.AYS
                         string bpType = "", cogsAcct = "";
                         DateTime date = new DateTime();
                         int retcode = 0;
-                        double temp = 0;
-                        double invtotaldiff = 0;
+                        decimal temp = 0;
+                        decimal invtotaldiff = 0;
                         int currentline = 0;
                         string productgroup = "";
                         string ChargeNo = "";
@@ -248,15 +248,13 @@ namespace FT_ADDON.AYS
                                         //if (string.IsNullOrEmpty(productgroup)) productgroup = "";
                                         if (!string.IsNullOrEmpty(ChargeNo))
                                         {
-                                            sql = " select T1.LineId, T5.U_CostCenter, (T1.U_QUANTITY * isnull(T6.AvgPrice,0)) - (T1.U_QUANTITY * isnull(T7.AvgPrice,0)) as total " +
-                                                " from [@FT_CHARGE] T0 inner join [@FT_CHARGE1] T1 on T0.docentry = T1.docentry and T1.U_SOITEMCO <> T1.U_ITEMCODE" +
+                                            sql = " select T1.U_CostCenter, round(T6.stockprice * T6.Quantity,2) as total " +
+                                                " from (select T1.U_SOITEMCO, T5.U_CostCenter from [@FT_CHARGE] T0 inner join [@FT_CHARGE1] T1 on T0.DocNum = " + ChargeNo + " and T0.docentry = T1.docentry and T1.U_SOITEMCO <> T1.U_ITEMCODE" +
                                                 " inner join oitm T4 on T1.U_SOITEMCO = T4.itemcode and isnull(T4.invntitem,'N') = 'Y'" +
                                                 " inner join oitb T5 on T4.itmsgrpcod = T5.itmsgrpcod" +
-                                                " inner join oitm T8 on T1.U_ITEMCODE = T8.itemcode and isnull(T8.invntitem,'N') = 'Y'" +
-                                                " inner join ( select T1.itemcode, avg(T1.stockprice) as AvgPrice from OIGN T0 inner join IGN1 T1 on T0.DocEntry = T1.DocEntry where T0.U_DelNo = " + delno + " group by T1.itemcode ) T6 on T1.U_SOITEMCO = T6.itemcode" +
-                                                " inner join ( select T1.itemcode, avg(T1.stockprice) as AvgPrice from OIGE T0 inner join IGE1 T1 on T0.DocEntry = T1.DocEntry where T0.U_DelNo = " + delno + " group by T1.itemcode ) T7 on T1.U_ITEMCODE = T7.itemcode" +
-                                                " where T0.DocNum = " + ChargeNo +
-                                                " order by T1.LineId";
+                                                " inner join oitm T8 on T1.U_ITEMCODE = T8.itemcode and isnull(T8.invntitem,'N') = 'Y' group by T1.U_SOITEMCO, T5.U_CostCenter) T1" +
+                                                " inner join OIGN T10 on T10.U_DelNo = " + delno +
+                                                " inner join IGN1 T6 on T10.docentry = T6.docentry and T1.U_SOITEMCO = T6.itemcode";
                                             rs1.DoQuery(sql);
                                             if (rs1.RecordCount > 0)
                                             {
@@ -264,7 +262,7 @@ namespace FT_ADDON.AYS
                                                 while (!rs1.EoF)
                                                 {
                                                     productgroup = rs1.Fields.Item("U_CostCenter").Value.ToString();
-                                                    temp = double.Parse(rs1.Fields.Item("total").Value.ToString());
+                                                    temp = decimal.Parse(rs1.Fields.Item("total").Value.ToString());
                                                     temp = Math.Round(temp, 2, MidpointRounding.AwayFromZero);
                                                     currentline++;
                                                     if (currentline > 1)
@@ -274,9 +272,9 @@ namespace FT_ADDON.AYS
                                                     }
                                                     oJE.Lines.AccountCode = cogsAcct;
                                                     if (temp > 0)
-                                                        oJE.Lines.Credit = temp;
+                                                        oJE.Lines.Credit = Convert.ToDouble(temp);
                                                     else if (temp < 0)
-                                                        oJE.Lines.Debit = -temp;
+                                                        oJE.Lines.Debit = Convert.ToDouble(-temp);
                                                     if (!string.IsNullOrEmpty(productgroup))
                                                         oJE.Lines.CostingCode = productgroup;
 
@@ -293,10 +291,51 @@ namespace FT_ADDON.AYS
                                                 }
                                             }
 
+                                            sql = " select T1.U_CostCenter, round(T7.stockprice * T7.Quantity,2) * -1 as total " +
+                                                " from (select T1.U_ITEMCODE, T5.U_CostCenter from [@FT_CHARGE] T0 inner join [@FT_CHARGE1] T1 on T0.DocNum = " + ChargeNo + " and T0.docentry = T1.docentry and T1.U_SOITEMCO <> T1.U_ITEMCODE" +
+                                                " inner join oitm T4 on T1.U_SOITEMCO = T4.itemcode and isnull(T4.invntitem,'N') = 'Y'" +
+                                                " inner join oitb T5 on T4.itmsgrpcod = T5.itmsgrpcod" +
+                                                " inner join oitm T8 on T1.U_ITEMCODE = T8.itemcode and isnull(T8.invntitem,'N') = 'Y' group by T1.U_ITEMCODE, T5.U_CostCenter) T1" +
+                                                " inner join OIGE T10 on T10.U_DelNo = " + delno +
+                                                " inner join IGE1 T7 on T10.docentry = T7.docentry and T1.U_ITEMCODE = T7.itemcode";
+                                            rs1.DoQuery(sql);
+                                            if (rs1.RecordCount > 0)
+                                            {
+                                                rs1.MoveFirst();
+                                                while (!rs1.EoF)
+                                                {
+                                                    productgroup = rs1.Fields.Item("U_CostCenter").Value.ToString();
+                                                    temp = decimal.Parse(rs1.Fields.Item("total").Value.ToString());
+                                                    temp = Math.Round(temp, 2, MidpointRounding.AwayFromZero);
+                                                    currentline++;
+                                                    if (currentline > 1)
+                                                    {
+                                                        oJE.Lines.Add();
+                                                        oJE.Lines.SetCurrentLine(currentline - 1);
+                                                    }
+                                                    oJE.Lines.AccountCode = cogsAcct;
+                                                    if (temp > 0)
+                                                        oJE.Lines.Credit = Convert.ToDouble(temp);
+                                                    else if (temp < 0)
+                                                        oJE.Lines.Debit = Convert.ToDouble(-temp);
+                                                    if (!string.IsNullOrEmpty(productgroup))
+                                                        oJE.Lines.CostingCode = productgroup;
+
+                                                    jedtl = new JEDetails();
+                                                    jedtl.AccountCode = oJE.Lines.AccountCode;
+                                                    jedtl.CostingCode = oJE.Lines.CostingCode;
+                                                    jedtl.Debit = oJE.Lines.Debit;
+                                                    jedtl.Credit = oJE.Lines.Credit;
+                                                    JEdtls.Add(jedtl);
+
+                                                    invtotaldiff = invtotaldiff + temp;
+
+                                                    rs1.MoveNext();
+                                                }
+                                            }
                                         }
                                         rs.MoveNext();
                                     }
-
                                     if (invtotaldiff != 0)
                                     {
                                         currentline++;
@@ -307,9 +346,9 @@ namespace FT_ADDON.AYS
                                         }
                                         oJE.Lines.AccountCode = "150500";// "150400"; Provision for Cost of Goods Sold
                                         if (invtotaldiff > 0)
-                                            oJE.Lines.Debit = invtotaldiff;
+                                            oJE.Lines.Debit = Convert.ToDouble(invtotaldiff);
                                         else if (invtotaldiff < 0)
-                                            oJE.Lines.Credit = -invtotaldiff;
+                                            oJE.Lines.Credit = Convert.ToDouble(-invtotaldiff);
 
                                         jedtl = new JEDetails();
                                         jedtl.AccountCode = oJE.Lines.AccountCode;
@@ -319,7 +358,8 @@ namespace FT_ADDON.AYS
                                     }
 
                                 }
-                                if (invtotaldiff != 0)
+                                //if (invtotaldiff != 0)
+                                if (currentline > 0)
                                 {
                                     retcode = oJE.Add();
                                     if (retcode != 0)
