@@ -2906,9 +2906,9 @@ namespace FT_ADDON.AYS
             ods = (SAPbouiCOM.DBDataSource)oForm.DataSources.DBDataSources.Item("@" + dsname1);
             SAPbouiCOM.DBDataSource oDS2 = oForm.DataSources.DBDataSources.Item("@" + dsnameb);
 
-            double qty = 0;
-            double batchqty = 0;
-            double tempqty = 0;
+            decimal qty = 0;
+            decimal batchqty = 0;
+            decimal tempqty = 0;
             string whscode = "";
             string itemcode = "";
             string visorder = "";
@@ -2922,7 +2922,7 @@ namespace FT_ADDON.AYS
                 visorder = ods.GetValue("VisOrder", x).Trim();
 
                 columnname = "U_QUANTITY";
-                if (!double.TryParse(ods.GetValue(columnname, x), out qty))
+                if (!decimal.TryParse(ods.GetValue(columnname, x), out qty))
                 {
                     SAP.SBOApplication.StatusBar.SetText(oMatrix.Columns.Item(columnname).TitleObject.Caption + " for #" + visorder + " is invalid.", SAPbouiCOM.BoMessageTime.bmt_Medium, SAPbouiCOM.BoStatusBarMessageType.smt_Error);
                     return false;
@@ -2957,7 +2957,7 @@ namespace FT_ADDON.AYS
                                     {
                                         if (oDS2.GetValue("U_WHSCODE", y).Trim() == whscode && oDS2.GetValue("U_ITEMCODE", y).Trim() == itemcode)
                                         {
-                                            if (!double.TryParse(oDS2.GetValue("U_QUANTITY", y), out tempqty))
+                                            if (!decimal.TryParse(oDS2.GetValue("U_QUANTITY", y), out tempqty))
                                             {
                                                 SAP.SBOApplication.StatusBar.SetText("Batch Quantity for #" + visorder + " is invalid.", SAPbouiCOM.BoMessageTime.bmt_Medium, SAPbouiCOM.BoStatusBarMessageType.smt_Error);
                                                 return false;
